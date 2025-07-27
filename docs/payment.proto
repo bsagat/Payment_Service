@@ -1,0 +1,15 @@
+syntax = "proto3"
+package payment.v1
+
+import "google/protobuf/timestamp.proto"
+
+message Payment{
+    string id = 1;
+    string order_id = 2;
+    strign user_id = 3;
+    float64 amount = 4;
+    string currency = 5;
+    string status = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
