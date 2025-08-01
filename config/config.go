@@ -12,7 +12,7 @@ type (
 	Config struct {
 		Postgres postgres.Config
 		Server   Server
-		DevLevel string `env:"level"`
+		DevLevel string `env:"LEVEL"`
 	}
 
 	Server struct {

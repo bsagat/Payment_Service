@@ -1,15 +1,198 @@
-syntax = "proto3"
-package payment.v1
+syntax = "proto3";
 
-import "google/protobuf/timestamp.proto"
+package payment.v1;
 
-message Payment{
-    string id = 1;
-    string order_id = 2;
-    strign user_id = 3;
-    float64 amount = 4;
-    string currency = 5;
-    string status = 6;
-    google.protobuf.Timestamp created_at = 7;
-    google.protobuf.Timestamp updated_at = 8;
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+option go_package = "payment/v1;paymentv1";
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_SUCCESS = 2;
+  PAYMENT_STATUS_DECLINED = 3;
+  PAYMENT_STATUS_REFUNDED = 4;
 }
+
+// Payment service
+service Payment {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments"
+      body: "*"
+    };
+  }
+
+  rpc DeclinePayment(DeclinePaymentRequest) returns (DeclinePaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/decline"
+      body: "*"
+    };
+  }
+
+  rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/refund"
+      body: "*"
+    };
+  }
+
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse) {
+    option (google.api.http) = {
+      get: "/v1/payments/{payment_id}"
+    };
+  }
+
+  rpc COFPayment(COFPaymentRequest) returns (COFPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/cof"
+      body: "*"
+    };
+  }
+
+  rpc SuccessPayment(SuccessPaymentRequest) returns (SuccessPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/success"
+      body: "*"
+    };
+  }
+}
+
+// COF service
+service COF {
+  rpc GetCOFbyID(GetCOFbyIDRequest) returns (GetCOFbyIDResponse) {
+    option (google.api.http) = {
+      get: "/v1/cof/{cof_id}"
+    };
+  }
+
+  rpc GetCOFbyCardNum(GetCOFbyCardRequest) returns (GetCOFbyIDResponse) {
+    option (google.api.http) = {
+      post: "/v1/cof/by-card"
+      body: "*"
+    };
+  }
+
+  rpc DeactivateCOF(DeactivateCOFRequest) returns (DeactivateCOFResponse) {
+    option (google.api.http) = {
+      post: "/v1/cof/{cof_id}/deactivate"
+      body: "*"
+    };
+  }
+
+  rpc EnableCOF(EnableCOFRequest) returns (EnableCOFResponse) {
+    option (google.api.http) = {
+      post: "/v1/cof/{cof_id}/enable"
+      body: "*"
+    };
+  }
+}
+
+// ==== Messages ====
+
+message CreatePaymentRequest {
+  string order_id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string return_url = 5;
+  string error_url = 6;
+}
+
+message CreatePaymentResponse {
+  string payment_id = 1;
+  PaymentStatus status = 2;
+  string payment_url = 3;
+}
+
+message DeclinePaymentRequest {
+  string payment_id = 1;
+  string reason = 2;
+}
+
+message DeclinePaymentResponse {
+  PaymentStatus status = 1;
+}
+
+message RefundPaymentRequest {
+  string payment_id = 1;
+  string reason = 2;
+}
+
+message RefundPaymentResponse {
+  PaymentStatus status = 1;
+}
+
+message GetPaymentRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentResponse {
+  string payment_id = 1;
+  string order_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string currency = 5;
+  PaymentStatus status = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message SuccessPaymentRequest {
+  string payment_id = 1;
+}
+
+message SuccessPaymentResponse {
+  string message = 1;
+}
+
+message COFPaymentRequest {
+  string cof_id = 1;
+  string payment_id = 2;
+  string return_url = 5;
+  string error_url = 6;
+}
+
+message COFPaymentResponse {
+  string secure_check_url = 1;
+}
+
+// ==== COF ====
+
+message GetCOFbyIDRequest {
+  string cof_id = 1;
+}
+
+message GetCOFbyCardRequest {
+  string last4 = 1;
+  string exp_month = 2;
+  string exp_year = 3;
+  string user_id = 4;
+}
+
+message GetCOFbyIDResponse {
+  string cof_id = 1;
+  string user_id = 2;
+  string last4 = 3;
+  string exp_month = 4;
+  string exp_year = 5;
+  string status = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message DeactivateCOFRequest {
+  string cof_id = 1;
+}
+
+message DeactivateCOFResponse {
+  string status = 1;
+}
+
+message EnableCOFRequest {
+  string cof_id = 1;
+}
+
+message EnableCOFResponse {
+  string status = 1;
+}
+

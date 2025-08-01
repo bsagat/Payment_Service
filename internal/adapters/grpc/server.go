@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"payment/config"
+	paymentv1 "payment/internal/adapters/grpc/payment/v1"
+	"payment/internal/adapters/grpc/routers"
 	"payment/pkg/logger"
 
 	"google.golang.org/grpc"
@@ -20,7 +22,8 @@ type API struct {
 func New(ctx context.Context, cfg config.GRPCServer, log logger.Logger) *API {
 	server := grpc.NewServer(GetOptions(cfg)...)
 
-	// Route registration
+	paymentv1.RegisterCOFServer(server, routers.NewCOFServer())
+	paymentv1.RegisterPaymentServer(server, routers.NewPaymentServer())
 
 	return &API{
 		server: server,

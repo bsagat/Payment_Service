@@ -23,11 +23,15 @@ type Config struct {
 	MaxIdleTime  time.Duration `env:"POSTGRES_MAX_IDLE_TIME" envDefault:"15m"`
 }
 
-func New(ctx context.Context, cfg Config) (*API, error) {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
+func (c Config) DSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		c.Host, c.Port, c.User, c.Password, c.DBName,
+	)
+}
 
-	poolConfig, err := pgxpool.ParseConfig(dsn)
+func New(ctx context.Context, cfg Config) (*API, error) {
+	poolConfig, err := pgxpool.ParseConfig(cfg.DSN())
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse database config: %w", err)
 	}
