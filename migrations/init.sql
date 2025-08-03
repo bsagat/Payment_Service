@@ -1,6 +1,6 @@
 SET TIMEZONE = 'Asia/Almaty';
 
-CREATE TYPE status_enum as enum ('CREATED','DEPOSITED','REVERSED','failed');
+CREATE TYPE status_enum as enum ('CREATED','AUTHORIZED','APPROVED','DEPOSITED','DECLINED','REVERSED','REFUNDED');
 CREATE TYPE operation as enum ('COF_payment','URL_payment');
 
 CREATE TABLE Transactions(

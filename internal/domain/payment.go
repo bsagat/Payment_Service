@@ -1,16 +1,19 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type PaymentStatus string
 
 const (
-	StatusCreated   PaymentStatus = "CREATED"   // Заказ создан, но оплата ещё не инициирована
-	StatusApproved  PaymentStatus = "APPROVED"  // Платёж одобрен: средства заблокированы, но ещё не списаны
-	StatusDeposited PaymentStatus = "DEPOSITED" // Платёж завершён: средства списаны со счёта покупателя
-	StatusDeclined  PaymentStatus = "DECLINED"  // Платёж отклонён банком (недостаточно средств, ошибка и т.д.)
-	StatusReversed  PaymentStatus = "REVERSED"  // Платёж отменён по инициативе клиента
-	StatusREFUNDED  PaymentStatus = "REFUNDED"  // Средства возвращены клиенту после успешного платежа
+	StatusCreated    PaymentStatus = "CREATED"    // Платёж создан, но ещё не инициирован
+	StatusAuthorized PaymentStatus = "AUTHORIZED" // Авторизация завершена, средства еще не списаны
+	StatusApproved   PaymentStatus = "APPROVED"   // Платёж одобрен, деньги заблокированы
+	StatusDeposited  PaymentStatus = "DEPOSITED"  // Средства списаны, платёж завершён
+	StatusDeclined   PaymentStatus = "DECLINED"   // Платёж отклонён банком
+	StatusReversed   PaymentStatus = "REVERSED"   // Отмена клиентом до завершения платежа
+	StatusRefunded   PaymentStatus = "REFUNDED"   // Возврат после завершения платежа
 )
 
 type PaymentOperation string

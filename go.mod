@@ -3,6 +3,7 @@ module payment
 go 1.24.0
 
 require (
+	github.com/bsagat/bereke-merchant-api v1.0.2 // indirect
 	github.com/bsagat/envzilla/v2 v2.0.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
