@@ -2,12 +2,13 @@ package grpcserver
 
 import (
 	"payment/config"
+	"payment/pkg/logger"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
 
-func GetOptions(cfg config.GRPCServer) []grpc.ServerOption {
+func GetOptions(cfg config.GRPCServer, log logger.Logger) []grpc.ServerOption {
 	var opts []grpc.ServerOption
 
 	opts = append(opts,
@@ -16,6 +17,7 @@ func GetOptions(cfg config.GRPCServer) []grpc.ServerOption {
 			MaxConnectionAge:      cfg.MaxConnectionAge,
 			MaxConnectionAgeGrace: cfg.MaxConnectionAgeGrace,
 		}),
+		grpc.UnaryInterceptor(LoggingInterceptor(log)),
 	)
 	return opts
 }

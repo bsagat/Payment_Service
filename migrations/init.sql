@@ -1,20 +1,35 @@
 SET TIMEZONE = 'Asia/Almaty';
 
-CREATE TYPE status_enum as enum ('CREATED','AUTHORIZED','APPROVED','DEPOSITED','DECLINED','REVERSED','REFUNDED');
-CREATE TYPE operation as enum ('COF_payment','URL_payment');
+CREATE TYPE status_enum AS ENUM ('CREATED','AUTHORIZED','APPROVED','DEPOSITED','DECLINED','REFUNDED');
+CREATE TYPE operation_enum AS ENUM ('COF_payment','URL_payment');
 
-CREATE TABLE Transactions(
-    Payment_id VARCHAR(256) NOT NULL UNIQUE, 
+CREATE TABLE Transactions (
+    Payment_id VARCHAR(256) PRIMARY KEY,
     User_id VARCHAR(256) NOT NULL,
     Order_id VARCHAR(256) NOT NULL UNIQUE,
-    Amount float NOT NULL,
-    Currency VARCHAR(10) NOT NULL,
-    Broker VARCHAR(256) NOT NULL,
-    Operation operation NOT NULL
+    Amount NUMERIC(18,2) NOT NULL,
+    Currency CHAR(3) NOT NULL, 
+    Broker VARCHAR(100) NOT NULL,
+    Operation operation_enum NOT NULL,
+    Current_status status_enum NOT NULL DEFAULT 'CREATED',
+    Created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE Status(
-    Order_id VARCHAR(256) NOT NULL references Transactions(Order_id) ON DELETE CASCADE,
-    Created_at TIMESTAMPTZ Default Now(),
-    Status status_enum NOT NULL
+CREATE TABLE TransactionStatus (
+    Order_id VARCHAR(256) NOT NULL REFERENCES Transactions(Order_id) ON DELETE CASCADE,
+    Created_at TIMESTAMPTZ DEFAULT NOW(),
+    Status status_enum NOT NULL,
+    PRIMARY KEY (Order_id, Created_at)
 );
+
+CREATE TABLE Refunds (
+    Refund_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    Payment_id VARCHAR(256) REFERENCES Transactions(Payment_id) ON DELETE CASCADE,
+    Amount NUMERIC(18,2) NOT NULL,
+    Reason TEXT,
+    Created_at TIMESTAMPTZ DEFAULT NOW(),
+    Status status_enum NOT NULL DEFAULT 'CREATED'
+);
+
+CREATE INDEX idx_transactions_user ON Transactions(User_id);
+CREATE INDEX idx_status_created_at ON TransactionStatus(Created_at DESC);

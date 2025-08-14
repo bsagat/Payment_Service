@@ -12,6 +12,7 @@ type (
 	Config struct {
 		Postgres postgres.Config
 		Server   Server
+		Broker   Broker
 		DevLevel string `env:"LEVEL"`
 	}
 
@@ -21,9 +22,14 @@ type (
 
 	GRPCServer struct {
 		Port                  string        `env:"GRPC_PORT" default:"50002"`
-		MaxRecvMsgSizeMiB     int           `env:"GRPC_MAX_MESSAGE_SIZE_MIB" envDefault:"12"`
-		MaxConnectionAge      time.Duration `env:"GRPC_MAX_CONNECTION_AGE" envDefault:"30s"`
-		MaxConnectionAgeGrace time.Duration `env:"GRPC_MAX_CONNECTION_AGE_GRACE" envDefault:"10s"`
+		MaxRecvMsgSizeMiB     int           `env:"GRPC_MAX_MESSAGE_SIZE_MIB" default:"12"`
+		MaxConnectionAge      time.Duration `env:"GRPC_MAX_CONNECTION_AGE" default:"30s"`
+		MaxConnectionAgeGrace time.Duration `env:"GRPC_MAX_CONNECTION_AGE_GRACE" default:"10s"`
+	}
+
+	Broker struct {
+		ApiKey string `env:"BEREKE_MERCHANT_API"`
+		Mode   string `env:"BEREKE_MERCHANT_MODE"`
 	}
 )
 

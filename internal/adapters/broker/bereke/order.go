@@ -3,162 +3,112 @@ package bereke
 import (
 	"context"
 	"fmt"
-	"payment/internal/domain"
-	"payment/pkg/currency"
+	"payment/internal/domain/models"
 	"time"
 
-	bma "github.com/bsagat/bereke-merchant-api"
+	money "github.com/bsagat/bereke-merchant-api/currency"
+	"github.com/bsagat/bereke-merchant-api/models/code"
 )
 
-// CreateOrder регистрирует новый платёж в системе Bereke.
-// Возвращает ссылку на платёжную форму для редиректа пользователя.
-func (c *BerekeClient) CreateOrder(ctx context.Context, payment *domain.Payment) (string, error) {
+func (c *BerekeClient) CreateOrder(ctx context.Context, payment *models.Payment, returnURL, errorURL string) (string, error) {
 	const op = "BerekeClient.CreateOrder"
 
-	c.log.Info(ctx, op, "order_id", payment.OrderID, "amount", payment.Amount, "currency", payment.Currency)
-
-	orderReq := bma.RegisterOrderRequest{
-		Order: bma.Order{
-			OrderNumber:        payment.OrderID,
-			Amount:             currency.ToMinorUnit(payment.Amount, payment.Currency),
-			Currency:           currency.ToNumeric(payment.Currency),
-			ReturnURL:          c.returnURL,
-			FailURL:            c.errorURL,
-			SessionTimeoutSecs: int(time.Minute.Seconds()) * 15,
-		},
-		ClientInfo: bma.ClientInfo{
-			ClientId: payment.UserID,
-		},
-	}
-
-	res, err := c.merchant.RegisterOrder(ctx, orderReq)
+	res, err := c.merchant.RegisterOrderByNumber(ctx, payment.OrderID, payment.Amount, money.ToNumeric(payment.Currency), returnURL, errorURL)
 	if err != nil {
-		c.log.Error(ctx, op, "err", err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	// Проверка статуса в CreateOrder отличается
-	if len(res.ErrorCode) != 0 {
-		errMsg := fmt.Sprintf("response code: %s, message: %s", res.ErrorCode, res.ErrorMessage)
-		c.log.Error(ctx, op, "error", errMsg)
-		return "", fmt.Errorf("%s: %s", op, errMsg)
+	if res.ErrorCode != code.Success {
+		return "", fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
 	}
 
 	payment.ID = res.OrderID
-	c.log.Info(ctx, op, "form_url", res.FormURL)
+	payment.Broker = Bereke_Broker
 
 	return res.FormURL, nil
 }
 
-// GetOrderStatus получает текущий статус заказа по его ID.
-func (c *BerekeClient) GetOrderStatus(ctx context.Context, paymentID string) (domain.PaymentStatus, error) {
+func (c *BerekeClient) GetOrderStatus(ctx context.Context, paymentID string) (models.StatusType, error) {
 	const op = "BerekeClient.GetOrderStatus"
-	c.log.Info(ctx, op, "payment_id", paymentID)
 
-	statusReq := bma.OrderStatusRequest{OrderID: paymentID}
-
-	res, err := c.merchant.OrderStatus(ctx, statusReq)
+	res, err := c.merchant.GetOrderStatusByID(ctx, paymentID)
 	if err != nil {
-		c.log.Error(ctx, op, "err", err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	if res.ErrorCode != "0" {
-		errMsg := fmt.Sprintf("response code: %s, message: %s", res.ErrorCode, res.ErrorMessage)
-		c.log.Error(ctx, op, "error", errMsg)
-		return "", fmt.Errorf("%s: %s", op, errMsg)
+	if res.ErrorCode != code.Success {
+		return "", fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
 	}
 
-	c.log.Info(ctx, op, "payment_state", res.PaymentAmountInfo.PaymentState)
-
-	return domain.PaymentStatus(res.PaymentAmountInfo.PaymentState), nil
+	return models.StatusType(res.PaymentAmountInfo.PaymentState), nil
 }
 
-// GetOrderDetails возвращает полную информацию о заказе (в том числе дату, сумму, валюту, статус).
-func (c *BerekeClient) GetOrderDetails(ctx context.Context, paymentID string) (domain.Payment, error) {
+func (c *BerekeClient) GetOrderDetails(ctx context.Context, paymentID string) (models.Payment, error) {
 	const op = "BerekeClient.GetOrderDetails"
-	c.log.Info(ctx, op, "payment_id", paymentID)
 
-	statusReq := bma.OrderStatusRequest{OrderID: paymentID}
-
-	res, err := c.merchant.OrderStatus(ctx, statusReq)
+	res, err := c.merchant.GetOrderStatusByID(ctx, paymentID)
 	if err != nil {
-		c.log.Error(ctx, op, "err", err)
-		return domain.Payment{}, fmt.Errorf("%s: %w", op, err)
+		return models.Payment{}, fmt.Errorf("%s: %w", op, err)
 	}
 
-	if res.ErrorCode != "0" {
-		errMsg := fmt.Sprintf("response code: %s, message: %s", res.ErrorCode, res.ErrorMessage)
-		c.log.Error(ctx, op, "error", errMsg)
-		return domain.Payment{}, fmt.Errorf("%s: %s", op, errMsg)
+	if res.ErrorCode != code.Success {
+		return models.Payment{}, fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
 	}
 
-	payment := domain.Payment{
+	payment := models.Payment{
 		ID:        res.OrderID,
 		Broker:    Bereke_Broker,
-		Amount:    currency.ConvertFromMinorUnits(res.Amount, res.Currency),
-		Currency:  currency.FromString(res.Currency),
-		Status:    domain.PaymentStatus(res.PaymentAmountInfo.PaymentState),
+		Amount:    res.Amount,
+		Currency:  money.ToAlpha(res.Currency),
+		Status:    models.StatusType(res.PaymentAmountInfo.PaymentState),
 		CreatedAt: time.UnixMilli(res.Date),
 		UserID:    res.BindingInfo.ClientID,
 	}
 
-	c.log.Info(ctx, op, "order", payment)
-
 	return payment, nil
 }
 
-// ReversalOrder выполняет аннулирование (сторнирование) платежа.
-// Обычно вызывается, если деньги были авторизованы, но не захвачены.
-func (c *BerekeClient) ReversalOrder(ctx context.Context, orderID string, amount float64, currencyStr string) error {
+func (c *BerekeClient) ReversalOrder(ctx context.Context, orderID string, amount float64, currency string) error {
 	const op = "BerekeClient.ReversalOrder"
-	c.log.Info(ctx, op, "order_id", orderID, "amount", amount, "currency", currencyStr)
 
-	cancelReq := bma.ReversalOrderRequest{
-		OrderID:  orderID,
-		Amount:   currency.ToMinorUnit(amount, currencyStr),
-		Currency: currency.ToNumeric(currencyStr),
-	}
-
-	res, err := c.merchant.ReversalOrder(ctx, cancelReq)
+	res, err := c.merchant.ReversalOrderByID(ctx, amount, money.ToNumeric(currency), orderID)
 	if err != nil {
-		c.log.Error(ctx, op, "err", err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	if res.ErrorCode != "0" {
-		errMsg := fmt.Sprintf("response code: %s, message: %s", res.ErrorCode, res.ErrorMessage)
-		c.log.Error(ctx, op, "error", errMsg)
-		return fmt.Errorf("%s: %s", op, errMsg)
+	if res.ErrorCode != code.Success {
+		return fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
 	}
 
-	c.log.Info(ctx, op, "reversal_success", true)
 	return nil
 }
 
-// RefundOrder выполняет возврат средств по заказу (частично или полностью).
-func (c *BerekeClient) RefundOrder(ctx context.Context, orderID string, amount float64, currencyStr string) error {
+func (c *BerekeClient) RefundOrder(ctx context.Context, orderID string, amount float64, currency string) error {
 	const op = "BerekeClient.RefundOrder"
-	c.log.Info(ctx, op, "order_id", orderID, "amount", amount, "currency", currencyStr)
 
-	cancelReq := bma.RefundOrderRequest{
-		OrderID:  orderID,
-		Amount:   currency.ToMinorUnit(amount, currencyStr),
-		Currency: currency.ToNumeric(currencyStr),
-	}
-
-	res, err := c.merchant.RefundOrder(ctx, cancelReq)
+	res, err := c.merchant.RefundOrderByID(ctx, amount, money.ToNumeric(currency), orderID)
 	if err != nil {
-		c.log.Error(ctx, op, "err", err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	if res.ErrorCode != "0" {
-		errMsg := fmt.Sprintf("response code: %s, message: %s", res.ErrorCode, res.ErrorMessage)
-		c.log.Error(ctx, op, "error", errMsg)
-		return fmt.Errorf("%s: %s", op, errMsg)
+	if res.ErrorCode != code.Success {
+		return fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
 	}
 
-	c.log.Info(ctx, op, "refund_success", true)
+	return nil
+}
+
+func (c *BerekeClient) CancelOrder(ctx context.Context, orderID string) error {
+	const op = "BerekeClient.CancelOrder"
+
+	res, err := c.merchant.CancelOrderByID(ctx, orderID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if res.ErrorCode != code.Success {
+		return fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
+	}
+
 	return nil
 }

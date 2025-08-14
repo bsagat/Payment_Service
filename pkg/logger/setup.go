@@ -13,11 +13,11 @@ const (
 )
 
 type Logger interface {
-	Info(ctx context.Context, msg string, args ...any)
-	Error(ctx context.Context, msg string, args ...any)
-	Warn(ctx context.Context, msg string, args ...any)
-	Debug(ctx context.Context, msg string, args ...any)
-	Fatal(ctx context.Context, msg string, args ...any)
+	Info(ctx context.Context, action string, msg string, args ...any)
+	Error(ctx context.Context, action string, err error, msg string, args ...any)
+	Warn(ctx context.Context, action string, msg string, args ...any)
+	Debug(ctx context.Context, action string, msg string, args ...any)
+	Fatal(ctx context.Context, action string, err error, msg string, args ...any)
 	With(args ...any) Logger
 }
 
@@ -51,24 +51,24 @@ func New(level string) Logger {
 	}
 }
 
-func (s SLogger) Info(ctx context.Context, msg string, args ...any) {
-	s.log.InfoContext(ctx, msg, args...)
+func (s SLogger) Info(ctx context.Context, action string, msg string, args ...any) {
+	s.log.InfoContext(ctx, msg, append(args, "action", action)...)
 }
 
-func (s SLogger) Error(ctx context.Context, msg string, args ...any) {
-	s.log.ErrorContext(ctx, msg, args...)
+func (s SLogger) Error(ctx context.Context, action string, err error, msg string, args ...any) {
+	s.log.ErrorContext(ctx, msg, append(args, "error", err, "action", action)...)
 }
 
-func (s SLogger) Warn(ctx context.Context, msg string, args ...any) {
-	s.log.WarnContext(ctx, msg, args...)
+func (s SLogger) Warn(ctx context.Context, action string, msg string, args ...any) {
+	s.log.WarnContext(ctx, msg, append(args, "action", action)...)
 }
 
-func (s SLogger) Debug(ctx context.Context, msg string, args ...any) {
-	s.log.DebugContext(ctx, msg, args...)
+func (s SLogger) Debug(ctx context.Context, action string, msg string, args ...any) {
+	s.log.DebugContext(ctx, msg, append(args, "action", action)...)
 }
 
-func (s SLogger) Fatal(ctx context.Context, msg string, args ...any) {
-	s.log.ErrorContext(ctx, msg, args...)
+func (s SLogger) Fatal(ctx context.Context, action string, err error, msg string, args ...any) {
+	s.Error(ctx, action, err, msg, args...)
 	os.Exit(1)
 }
 

@@ -10,6 +10,7 @@ import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
@@ -23,61 +24,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type PaymentStatus int32
-
-const (
-	PaymentStatus_PAYMENT_STATUS_UNSPECIFIED PaymentStatus = 0
-	PaymentStatus_PAYMENT_STATUS_PENDING     PaymentStatus = 1
-	PaymentStatus_PAYMENT_STATUS_SUCCESS     PaymentStatus = 2
-	PaymentStatus_PAYMENT_STATUS_DECLINED    PaymentStatus = 3
-	PaymentStatus_PAYMENT_STATUS_REFUNDED    PaymentStatus = 4
-)
-
-// Enum value maps for PaymentStatus.
-var (
-	PaymentStatus_name = map[int32]string{
-		0: "PAYMENT_STATUS_UNSPECIFIED",
-		1: "PAYMENT_STATUS_PENDING",
-		2: "PAYMENT_STATUS_SUCCESS",
-		3: "PAYMENT_STATUS_DECLINED",
-		4: "PAYMENT_STATUS_REFUNDED",
-	}
-	PaymentStatus_value = map[string]int32{
-		"PAYMENT_STATUS_UNSPECIFIED": 0,
-		"PAYMENT_STATUS_PENDING":     1,
-		"PAYMENT_STATUS_SUCCESS":     2,
-		"PAYMENT_STATUS_DECLINED":    3,
-		"PAYMENT_STATUS_REFUNDED":    4,
-	}
-)
-
-func (x PaymentStatus) Enum() *PaymentStatus {
-	p := new(PaymentStatus)
-	*p = x
-	return p
-}
-
-func (x PaymentStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (PaymentStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_payment_proto_enumTypes[0].Descriptor()
-}
-
-func (PaymentStatus) Type() protoreflect.EnumType {
-	return &file_payment_proto_enumTypes[0]
-}
-
-func (x PaymentStatus) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use PaymentStatus.Descriptor instead.
-func (PaymentStatus) EnumDescriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{0}
-}
-
 type CreatePaymentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderId       string                 `protobuf:"bytes,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
@@ -86,6 +32,9 @@ type CreatePaymentRequest struct {
 	Currency      string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
 	ReturnUrl     string                 `protobuf:"bytes,5,opt,name=return_url,json=returnUrl,proto3" json:"return_url,omitempty"`
 	ErrorUrl      string                 `protobuf:"bytes,6,opt,name=error_url,json=errorUrl,proto3" json:"error_url,omitempty"`
+	Operation     string                 `protobuf:"bytes,7,opt,name=operation,proto3" json:"operation,omitempty"` // вместо enum OperationType
+	Description   string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
+	Metadata      *structpb.Struct       `protobuf:"bytes,9,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -162,11 +111,31 @@ func (x *CreatePaymentRequest) GetErrorUrl() string {
 	return ""
 }
 
+func (x *CreatePaymentRequest) GetOperation() string {
+	if x != nil {
+		return x.Operation
+	}
+	return ""
+}
+
+func (x *CreatePaymentRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *CreatePaymentRequest) GetMetadata() *structpb.Struct {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
 type CreatePaymentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PaymentId     string                 `protobuf:"bytes,1,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
-	Status        PaymentStatus          `protobuf:"varint,2,opt,name=status,proto3,enum=payment.v1.PaymentStatus" json:"status,omitempty"`
-	PaymentUrl    string                 `protobuf:"bytes,3,opt,name=payment_url,json=paymentUrl,proto3" json:"payment_url,omitempty"`
+	PaymentUrl    string                 `protobuf:"bytes,2,opt,name=payment_url,json=paymentUrl,proto3" json:"payment_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -208,114 +177,11 @@ func (x *CreatePaymentResponse) GetPaymentId() string {
 	return ""
 }
 
-func (x *CreatePaymentResponse) GetStatus() PaymentStatus {
-	if x != nil {
-		return x.Status
-	}
-	return PaymentStatus_PAYMENT_STATUS_UNSPECIFIED
-}
-
 func (x *CreatePaymentResponse) GetPaymentUrl() string {
 	if x != nil {
 		return x.PaymentUrl
 	}
 	return ""
-}
-
-type DeclinePaymentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PaymentId     string                 `protobuf:"bytes,1,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
-	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeclinePaymentRequest) Reset() {
-	*x = DeclinePaymentRequest{}
-	mi := &file_payment_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeclinePaymentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeclinePaymentRequest) ProtoMessage() {}
-
-func (x *DeclinePaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeclinePaymentRequest.ProtoReflect.Descriptor instead.
-func (*DeclinePaymentRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *DeclinePaymentRequest) GetPaymentId() string {
-	if x != nil {
-		return x.PaymentId
-	}
-	return ""
-}
-
-func (x *DeclinePaymentRequest) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-type DeclinePaymentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        PaymentStatus          `protobuf:"varint,1,opt,name=status,proto3,enum=payment.v1.PaymentStatus" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeclinePaymentResponse) Reset() {
-	*x = DeclinePaymentResponse{}
-	mi := &file_payment_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeclinePaymentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeclinePaymentResponse) ProtoMessage() {}
-
-func (x *DeclinePaymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeclinePaymentResponse.ProtoReflect.Descriptor instead.
-func (*DeclinePaymentResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *DeclinePaymentResponse) GetStatus() PaymentStatus {
-	if x != nil {
-		return x.Status
-	}
-	return PaymentStatus_PAYMENT_STATUS_UNSPECIFIED
 }
 
 type RefundPaymentRequest struct {
@@ -328,7 +194,7 @@ type RefundPaymentRequest struct {
 
 func (x *RefundPaymentRequest) Reset() {
 	*x = RefundPaymentRequest{}
-	mi := &file_payment_proto_msgTypes[4]
+	mi := &file_payment_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -340,7 +206,7 @@ func (x *RefundPaymentRequest) String() string {
 func (*RefundPaymentRequest) ProtoMessage() {}
 
 func (x *RefundPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[4]
+	mi := &file_payment_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -353,7 +219,7 @@ func (x *RefundPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefundPaymentRequest.ProtoReflect.Descriptor instead.
 func (*RefundPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{4}
+	return file_payment_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RefundPaymentRequest) GetPaymentId() string {
@@ -372,14 +238,14 @@ func (x *RefundPaymentRequest) GetReason() string {
 
 type RefundPaymentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        PaymentStatus          `protobuf:"varint,1,opt,name=status,proto3,enum=payment.v1.PaymentStatus" json:"status,omitempty"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // вместо enum PaymentStatus
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RefundPaymentResponse) Reset() {
 	*x = RefundPaymentResponse{}
-	mi := &file_payment_proto_msgTypes[5]
+	mi := &file_payment_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -391,7 +257,7 @@ func (x *RefundPaymentResponse) String() string {
 func (*RefundPaymentResponse) ProtoMessage() {}
 
 func (x *RefundPaymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[5]
+	mi := &file_payment_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -404,14 +270,14 @@ func (x *RefundPaymentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefundPaymentResponse.ProtoReflect.Descriptor instead.
 func (*RefundPaymentResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{5}
+	return file_payment_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *RefundPaymentResponse) GetStatus() PaymentStatus {
+func (x *RefundPaymentResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return PaymentStatus_PAYMENT_STATUS_UNSPECIFIED
+	return ""
 }
 
 type GetPaymentRequest struct {
@@ -423,7 +289,7 @@ type GetPaymentRequest struct {
 
 func (x *GetPaymentRequest) Reset() {
 	*x = GetPaymentRequest{}
-	mi := &file_payment_proto_msgTypes[6]
+	mi := &file_payment_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -435,7 +301,7 @@ func (x *GetPaymentRequest) String() string {
 func (*GetPaymentRequest) ProtoMessage() {}
 
 func (x *GetPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[6]
+	mi := &file_payment_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -448,7 +314,7 @@ func (x *GetPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPaymentRequest.ProtoReflect.Descriptor instead.
 func (*GetPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{6}
+	return file_payment_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetPaymentRequest) GetPaymentId() string {
@@ -465,15 +331,18 @@ type GetPaymentResponse struct {
 	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Amount        float64                `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
 	Currency      string                 `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
-	Status        PaymentStatus          `protobuf:"varint,6,opt,name=status,proto3,enum=payment.v1.PaymentStatus" json:"status,omitempty"`
+	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"` // вместо enum PaymentStatus
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Operation     string                 `protobuf:"bytes,8,opt,name=operation,proto3" json:"operation,omitempty"` // вместо enum OperationType
+	Broker        string                 `protobuf:"bytes,9,opt,name=broker,proto3" json:"broker,omitempty"`
+	Metadata      *structpb.Struct       `protobuf:"bytes,10,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetPaymentResponse) Reset() {
 	*x = GetPaymentResponse{}
-	mi := &file_payment_proto_msgTypes[7]
+	mi := &file_payment_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -485,7 +354,7 @@ func (x *GetPaymentResponse) String() string {
 func (*GetPaymentResponse) ProtoMessage() {}
 
 func (x *GetPaymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[7]
+	mi := &file_payment_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -498,7 +367,7 @@ func (x *GetPaymentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPaymentResponse.ProtoReflect.Descriptor instead.
 func (*GetPaymentResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{7}
+	return file_payment_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetPaymentResponse) GetPaymentId() string {
@@ -536,11 +405,11 @@ func (x *GetPaymentResponse) GetCurrency() string {
 	return ""
 }
 
-func (x *GetPaymentResponse) GetStatus() PaymentStatus {
+func (x *GetPaymentResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return PaymentStatus_PAYMENT_STATUS_UNSPECIFIED
+	return ""
 }
 
 func (x *GetPaymentResponse) GetCreatedAt() *timestamppb.Timestamp {
@@ -548,6 +417,115 @@ func (x *GetPaymentResponse) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *GetPaymentResponse) GetOperation() string {
+	if x != nil {
+		return x.Operation
+	}
+	return ""
+}
+
+func (x *GetPaymentResponse) GetBroker() string {
+	if x != nil {
+		return x.Broker
+	}
+	return ""
+}
+
+func (x *GetPaymentResponse) GetMetadata() *structpb.Struct {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type GetPaymentStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PaymentId     string                 `protobuf:"bytes,1,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPaymentStatusRequest) Reset() {
+	*x = GetPaymentStatusRequest{}
+	mi := &file_payment_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPaymentStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPaymentStatusRequest) ProtoMessage() {}
+
+func (x *GetPaymentStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPaymentStatusRequest.ProtoReflect.Descriptor instead.
+func (*GetPaymentStatusRequest) Descriptor() ([]byte, []int) {
+	return file_payment_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetPaymentStatusRequest) GetPaymentId() string {
+	if x != nil {
+		return x.PaymentId
+	}
+	return ""
+}
+
+type GetPaymentStatusResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // вместо enum PaymentStatus
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPaymentStatusResponse) Reset() {
+	*x = GetPaymentStatusResponse{}
+	mi := &file_payment_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPaymentStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPaymentStatusResponse) ProtoMessage() {}
+
+func (x *GetPaymentStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPaymentStatusResponse.ProtoReflect.Descriptor instead.
+func (*GetPaymentStatusResponse) Descriptor() ([]byte, []int) {
+	return file_payment_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetPaymentStatusResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
 }
 
 type SuccessPaymentRequest struct {
@@ -596,7 +574,7 @@ func (x *SuccessPaymentRequest) GetPaymentId() string {
 
 type SuccessPaymentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // вместо enum PaymentStatus
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -631,351 +609,146 @@ func (*SuccessPaymentResponse) Descriptor() ([]byte, []int) {
 	return file_payment_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *SuccessPaymentResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-type COFPaymentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CofId         string                 `protobuf:"bytes,1,opt,name=cof_id,json=cofId,proto3" json:"cof_id,omitempty"`
-	PaymentId     string                 `protobuf:"bytes,2,opt,name=payment_id,json=paymentId,proto3" json:"payment_id,omitempty"`
-	ReturnUrl     string                 `protobuf:"bytes,5,opt,name=return_url,json=returnUrl,proto3" json:"return_url,omitempty"`
-	ErrorUrl      string                 `protobuf:"bytes,6,opt,name=error_url,json=errorUrl,proto3" json:"error_url,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *COFPaymentRequest) Reset() {
-	*x = COFPaymentRequest{}
-	mi := &file_payment_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *COFPaymentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*COFPaymentRequest) ProtoMessage() {}
-
-func (x *COFPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use COFPaymentRequest.ProtoReflect.Descriptor instead.
-func (*COFPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *COFPaymentRequest) GetCofId() string {
-	if x != nil {
-		return x.CofId
-	}
-	return ""
-}
-
-func (x *COFPaymentRequest) GetPaymentId() string {
-	if x != nil {
-		return x.PaymentId
-	}
-	return ""
-}
-
-func (x *COFPaymentRequest) GetReturnUrl() string {
-	if x != nil {
-		return x.ReturnUrl
-	}
-	return ""
-}
-
-func (x *COFPaymentRequest) GetErrorUrl() string {
-	if x != nil {
-		return x.ErrorUrl
-	}
-	return ""
-}
-
-type COFPaymentResponse struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	SecureCheckUrl string                 `protobuf:"bytes,1,opt,name=secure_check_url,json=secureCheckUrl,proto3" json:"secure_check_url,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *COFPaymentResponse) Reset() {
-	*x = COFPaymentResponse{}
-	mi := &file_payment_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *COFPaymentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*COFPaymentResponse) ProtoMessage() {}
-
-func (x *COFPaymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use COFPaymentResponse.ProtoReflect.Descriptor instead.
-func (*COFPaymentResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *COFPaymentResponse) GetSecureCheckUrl() string {
-	if x != nil {
-		return x.SecureCheckUrl
-	}
-	return ""
-}
-
-type GetCOFbyIDRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CofId         string                 `protobuf:"bytes,1,opt,name=cof_id,json=cofId,proto3" json:"cof_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCOFbyIDRequest) Reset() {
-	*x = GetCOFbyIDRequest{}
-	mi := &file_payment_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCOFbyIDRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCOFbyIDRequest) ProtoMessage() {}
-
-func (x *GetCOFbyIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCOFbyIDRequest.ProtoReflect.Descriptor instead.
-func (*GetCOFbyIDRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *GetCOFbyIDRequest) GetCofId() string {
-	if x != nil {
-		return x.CofId
-	}
-	return ""
-}
-
-type GetCOFbyCardRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Last4         string                 `protobuf:"bytes,1,opt,name=last4,proto3" json:"last4,omitempty"`
-	ExpMonth      string                 `protobuf:"bytes,2,opt,name=exp_month,json=expMonth,proto3" json:"exp_month,omitempty"`
-	ExpYear       string                 `protobuf:"bytes,3,opt,name=exp_year,json=expYear,proto3" json:"exp_year,omitempty"`
-	UserId        string                 `protobuf:"bytes,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCOFbyCardRequest) Reset() {
-	*x = GetCOFbyCardRequest{}
-	mi := &file_payment_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCOFbyCardRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCOFbyCardRequest) ProtoMessage() {}
-
-func (x *GetCOFbyCardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCOFbyCardRequest.ProtoReflect.Descriptor instead.
-func (*GetCOFbyCardRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *GetCOFbyCardRequest) GetLast4() string {
-	if x != nil {
-		return x.Last4
-	}
-	return ""
-}
-
-func (x *GetCOFbyCardRequest) GetExpMonth() string {
-	if x != nil {
-		return x.ExpMonth
-	}
-	return ""
-}
-
-func (x *GetCOFbyCardRequest) GetExpYear() string {
-	if x != nil {
-		return x.ExpYear
-	}
-	return ""
-}
-
-func (x *GetCOFbyCardRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-type GetCOFbyIDResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CofId         string                 `protobuf:"bytes,1,opt,name=cof_id,json=cofId,proto3" json:"cof_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Last4         string                 `protobuf:"bytes,3,opt,name=last4,proto3" json:"last4,omitempty"`
-	ExpMonth      string                 `protobuf:"bytes,4,opt,name=exp_month,json=expMonth,proto3" json:"exp_month,omitempty"`
-	ExpYear       string                 `protobuf:"bytes,5,opt,name=exp_year,json=expYear,proto3" json:"exp_year,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCOFbyIDResponse) Reset() {
-	*x = GetCOFbyIDResponse{}
-	mi := &file_payment_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCOFbyIDResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCOFbyIDResponse) ProtoMessage() {}
-
-func (x *GetCOFbyIDResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCOFbyIDResponse.ProtoReflect.Descriptor instead.
-func (*GetCOFbyIDResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *GetCOFbyIDResponse) GetCofId() string {
-	if x != nil {
-		return x.CofId
-	}
-	return ""
-}
-
-func (x *GetCOFbyIDResponse) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *GetCOFbyIDResponse) GetLast4() string {
-	if x != nil {
-		return x.Last4
-	}
-	return ""
-}
-
-func (x *GetCOFbyIDResponse) GetExpMonth() string {
-	if x != nil {
-		return x.ExpMonth
-	}
-	return ""
-}
-
-func (x *GetCOFbyIDResponse) GetExpYear() string {
-	if x != nil {
-		return x.ExpYear
-	}
-	return ""
-}
-
-func (x *GetCOFbyIDResponse) GetStatus() string {
+func (x *SuccessPaymentResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
 	return ""
 }
 
-func (x *GetCOFbyIDResponse) GetCreatedAt() *timestamppb.Timestamp {
+type ListPaymentsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPaymentsRequest) Reset() {
+	*x = ListPaymentsRequest{}
+	mi := &file_payment_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPaymentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPaymentsRequest) ProtoMessage() {}
+
+func (x *ListPaymentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_proto_msgTypes[10]
 	if x != nil {
-		return x.CreatedAt
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPaymentsRequest.ProtoReflect.Descriptor instead.
+func (*ListPaymentsRequest) Descriptor() ([]byte, []int) {
+	return file_payment_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListPaymentsRequest) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListPaymentsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListPaymentsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type ListPaymentsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Payments      []*GetPaymentResponse  `protobuf:"bytes,1,rep,name=payments,proto3" json:"payments,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPaymentsResponse) Reset() {
+	*x = ListPaymentsResponse{}
+	mi := &file_payment_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPaymentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPaymentsResponse) ProtoMessage() {}
+
+func (x *ListPaymentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPaymentsResponse.ProtoReflect.Descriptor instead.
+func (*ListPaymentsResponse) Descriptor() ([]byte, []int) {
+	return file_payment_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListPaymentsResponse) GetPayments() []*GetPaymentResponse {
+	if x != nil {
+		return x.Payments
 	}
 	return nil
 }
 
-type DeactivateCOFRequest struct {
+func (x *ListPaymentsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type HealthCheckRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	CofId         string                 `protobuf:"bytes,1,opt,name=cof_id,json=cofId,proto3" json:"cof_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DeactivateCOFRequest) Reset() {
-	*x = DeactivateCOFRequest{}
-	mi := &file_payment_proto_msgTypes[15]
+func (x *HealthCheckRequest) Reset() {
+	*x = HealthCheckRequest{}
+	mi := &file_payment_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DeactivateCOFRequest) String() string {
+func (x *HealthCheckRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeactivateCOFRequest) ProtoMessage() {}
+func (*HealthCheckRequest) ProtoMessage() {}
 
-func (x *DeactivateCOFRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[15]
+func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -986,40 +759,35 @@ func (x *DeactivateCOFRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeactivateCOFRequest.ProtoReflect.Descriptor instead.
-func (*DeactivateCOFRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{15}
+// Deprecated: Use HealthCheckRequest.ProtoReflect.Descriptor instead.
+func (*HealthCheckRequest) Descriptor() ([]byte, []int) {
+	return file_payment_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *DeactivateCOFRequest) GetCofId() string {
-	if x != nil {
-		return x.CofId
-	}
-	return ""
-}
-
-type DeactivateCOFResponse struct {
+type HealthCheckResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	DatabaseOk    bool                   `protobuf:"varint,1,opt,name=database_ok,json=databaseOk,proto3" json:"database_ok,omitempty"`
+	BrokerOk      bool                   `protobuf:"varint,2,opt,name=broker_ok,json=brokerOk,proto3" json:"broker_ok,omitempty"`
+	CheckedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=checked_at,json=checkedAt,proto3" json:"checked_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DeactivateCOFResponse) Reset() {
-	*x = DeactivateCOFResponse{}
-	mi := &file_payment_proto_msgTypes[16]
+func (x *HealthCheckResponse) Reset() {
+	*x = HealthCheckResponse{}
+	mi := &file_payment_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DeactivateCOFResponse) String() string {
+func (x *HealthCheckResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeactivateCOFResponse) ProtoMessage() {}
+func (*HealthCheckResponse) ProtoMessage() {}
 
-func (x *DeactivateCOFResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[16]
+func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_payment_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1030,104 +798,30 @@ func (x *DeactivateCOFResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeactivateCOFResponse.ProtoReflect.Descriptor instead.
-func (*DeactivateCOFResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{16}
+// Deprecated: Use HealthCheckResponse.ProtoReflect.Descriptor instead.
+func (*HealthCheckResponse) Descriptor() ([]byte, []int) {
+	return file_payment_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *DeactivateCOFResponse) GetStatus() string {
+func (x *HealthCheckResponse) GetDatabaseOk() bool {
 	if x != nil {
-		return x.Status
+		return x.DatabaseOk
 	}
-	return ""
+	return false
 }
 
-type EnableCOFRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	CofId         string                 `protobuf:"bytes,1,opt,name=cof_id,json=cofId,proto3" json:"cof_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EnableCOFRequest) Reset() {
-	*x = EnableCOFRequest{}
-	mi := &file_payment_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EnableCOFRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EnableCOFRequest) ProtoMessage() {}
-
-func (x *EnableCOFRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[17]
+func (x *HealthCheckResponse) GetBrokerOk() bool {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.BrokerOk
 	}
-	return mi.MessageOf(x)
+	return false
 }
 
-// Deprecated: Use EnableCOFRequest.ProtoReflect.Descriptor instead.
-func (*EnableCOFRequest) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *EnableCOFRequest) GetCofId() string {
+func (x *HealthCheckResponse) GetCheckedAt() *timestamppb.Timestamp {
 	if x != nil {
-		return x.CofId
+		return x.CheckedAt
 	}
-	return ""
-}
-
-type EnableCOFResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EnableCOFResponse) Reset() {
-	*x = EnableCOFResponse{}
-	mi := &file_payment_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EnableCOFResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EnableCOFResponse) ProtoMessage() {}
-
-func (x *EnableCOFResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_payment_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EnableCOFResponse.ProtoReflect.Descriptor instead.
-func (*EnableCOFResponse) Descriptor() ([]byte, []int) {
-	return file_payment_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *EnableCOFResponse) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
+	return nil
 }
 
 var File_payment_proto protoreflect.FileDescriptor
@@ -1135,7 +829,7 @@ var File_payment_proto protoreflect.FileDescriptor
 const file_payment_proto_rawDesc = "" +
 	"\n" +
 	"\rpayment.proto\x12\n" +
-	"payment.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"\xba\x01\n" +
+	"payment.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xaf\x02\n" +
 	"\x14CreatePaymentRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x16\n" +
@@ -1143,97 +837,72 @@ const file_payment_proto_rawDesc = "" +
 	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12\x1d\n" +
 	"\n" +
 	"return_url\x18\x05 \x01(\tR\treturnUrl\x12\x1b\n" +
-	"\terror_url\x18\x06 \x01(\tR\berrorUrl\"\x8a\x01\n" +
+	"\terror_url\x18\x06 \x01(\tR\berrorUrl\x12\x1c\n" +
+	"\toperation\x18\a \x01(\tR\toperation\x12 \n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x123\n" +
+	"\bmetadata\x18\t \x01(\v2\x17.google.protobuf.StructR\bmetadata\"W\n" +
 	"\x15CreatePaymentResponse\x12\x1d\n" +
 	"\n" +
-	"payment_id\x18\x01 \x01(\tR\tpaymentId\x121\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x19.payment.v1.PaymentStatusR\x06status\x12\x1f\n" +
-	"\vpayment_url\x18\x03 \x01(\tR\n" +
-	"paymentUrl\"N\n" +
-	"\x15DeclinePaymentRequest\x12\x1d\n" +
-	"\n" +
-	"payment_id\x18\x01 \x01(\tR\tpaymentId\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"K\n" +
-	"\x16DeclinePaymentResponse\x121\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x19.payment.v1.PaymentStatusR\x06status\"M\n" +
+	"payment_id\x18\x01 \x01(\tR\tpaymentId\x12\x1f\n" +
+	"\vpayment_url\x18\x02 \x01(\tR\n" +
+	"paymentUrl\"M\n" +
 	"\x14RefundPaymentRequest\x12\x1d\n" +
 	"\n" +
 	"payment_id\x18\x01 \x01(\tR\tpaymentId\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"J\n" +
-	"\x15RefundPaymentResponse\x121\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x19.payment.v1.PaymentStatusR\x06status\"2\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"/\n" +
+	"\x15RefundPaymentResponse\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"2\n" +
 	"\x11GetPaymentRequest\x12\x1d\n" +
 	"\n" +
-	"payment_id\x18\x01 \x01(\tR\tpaymentId\"\x89\x02\n" +
+	"payment_id\x18\x01 \x01(\tR\tpaymentId\"\xd9\x02\n" +
 	"\x12GetPaymentResponse\x12\x1d\n" +
 	"\n" +
 	"payment_id\x18\x01 \x01(\tR\tpaymentId\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\tR\aorderId\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x16\n" +
 	"\x06amount\x18\x04 \x01(\x01R\x06amount\x12\x1a\n" +
-	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x121\n" +
-	"\x06status\x18\x06 \x01(\x0e2\x19.payment.v1.PaymentStatusR\x06status\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"6\n" +
-	"\x15SuccessPaymentRequest\x12\x1d\n" +
-	"\n" +
-	"payment_id\x18\x01 \x01(\tR\tpaymentId\"2\n" +
-	"\x16SuccessPaymentResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"\x85\x01\n" +
-	"\x11COFPaymentRequest\x12\x15\n" +
-	"\x06cof_id\x18\x01 \x01(\tR\x05cofId\x12\x1d\n" +
-	"\n" +
-	"payment_id\x18\x02 \x01(\tR\tpaymentId\x12\x1d\n" +
-	"\n" +
-	"return_url\x18\x05 \x01(\tR\treturnUrl\x12\x1b\n" +
-	"\terror_url\x18\x06 \x01(\tR\berrorUrl\">\n" +
-	"\x12COFPaymentResponse\x12(\n" +
-	"\x10secure_check_url\x18\x01 \x01(\tR\x0esecureCheckUrl\"*\n" +
-	"\x11GetCOFbyIDRequest\x12\x15\n" +
-	"\x06cof_id\x18\x01 \x01(\tR\x05cofId\"|\n" +
-	"\x13GetCOFbyCardRequest\x12\x14\n" +
-	"\x05last4\x18\x01 \x01(\tR\x05last4\x12\x1b\n" +
-	"\texp_month\x18\x02 \x01(\tR\bexpMonth\x12\x19\n" +
-	"\bexp_year\x18\x03 \x01(\tR\aexpYear\x12\x17\n" +
-	"\auser_id\x18\x04 \x01(\tR\x06userId\"\xe5\x01\n" +
-	"\x12GetCOFbyIDResponse\x12\x15\n" +
-	"\x06cof_id\x18\x01 \x01(\tR\x05cofId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
-	"\x05last4\x18\x03 \x01(\tR\x05last4\x12\x1b\n" +
-	"\texp_month\x18\x04 \x01(\tR\bexpMonth\x12\x19\n" +
-	"\bexp_year\x18\x05 \x01(\tR\aexpYear\x12\x16\n" +
+	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\tR\x06status\x129\n" +
 	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"-\n" +
-	"\x14DeactivateCOFRequest\x12\x15\n" +
-	"\x06cof_id\x18\x01 \x01(\tR\x05cofId\"/\n" +
-	"\x15DeactivateCOFResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status\")\n" +
-	"\x10EnableCOFRequest\x12\x15\n" +
-	"\x06cof_id\x18\x01 \x01(\tR\x05cofId\"+\n" +
-	"\x11EnableCOFResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status*\xa1\x01\n" +
-	"\rPaymentStatus\x12\x1e\n" +
-	"\x1aPAYMENT_STATUS_UNSPECIFIED\x10\x00\x12\x1a\n" +
-	"\x16PAYMENT_STATUS_PENDING\x10\x01\x12\x1a\n" +
-	"\x16PAYMENT_STATUS_SUCCESS\x10\x02\x12\x1b\n" +
-	"\x17PAYMENT_STATUS_DECLINED\x10\x03\x12\x1b\n" +
-	"\x17PAYMENT_STATUS_REFUNDED\x10\x042\xbc\x05\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1c\n" +
+	"\toperation\x18\b \x01(\tR\toperation\x12\x16\n" +
+	"\x06broker\x18\t \x01(\tR\x06broker\x123\n" +
+	"\bmetadata\x18\n" +
+	" \x01(\v2\x17.google.protobuf.StructR\bmetadata\"8\n" +
+	"\x17GetPaymentStatusRequest\x12\x1d\n" +
+	"\n" +
+	"payment_id\x18\x01 \x01(\tR\tpaymentId\"2\n" +
+	"\x18GetPaymentStatusResponse\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"6\n" +
+	"\x15SuccessPaymentRequest\x12\x1d\n" +
+	"\n" +
+	"payment_id\x18\x01 \x01(\tR\tpaymentId\"0\n" +
+	"\x16SuccessPaymentResponse\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"_\n" +
+	"\x13ListPaymentsRequest\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"h\n" +
+	"\x14ListPaymentsResponse\x12:\n" +
+	"\bpayments\x18\x01 \x03(\v2\x1e.payment.v1.GetPaymentResponseR\bpayments\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x14\n" +
+	"\x12HealthCheckRequest\"\x8e\x01\n" +
+	"\x13HealthCheckResponse\x12\x1f\n" +
+	"\vdatabase_ok\x18\x01 \x01(\bR\n" +
+	"databaseOk\x12\x1b\n" +
+	"\tbroker_ok\x18\x02 \x01(\bR\bbrokerOk\x129\n" +
+	"\n" +
+	"checked_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcheckedAt2\xaf\x06\n" +
 	"\aPayment\x12m\n" +
-	"\rCreatePayment\x12 .payment.v1.CreatePaymentRequest\x1a!.payment.v1.CreatePaymentResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/v1/payments\x12x\n" +
-	"\x0eDeclinePayment\x12!.payment.v1.DeclinePaymentRequest\x1a\".payment.v1.DeclinePaymentResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/v1/payments/decline\x12t\n" +
+	"\rCreatePayment\x12 .payment.v1.CreatePaymentRequest\x1a!.payment.v1.CreatePaymentResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/v1/payments\x12t\n" +
 	"\rRefundPayment\x12 .payment.v1.RefundPaymentRequest\x1a!.payment.v1.RefundPaymentResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1/payments/refund\x12n\n" +
 	"\n" +
-	"GetPayment\x12\x1d.payment.v1.GetPaymentRequest\x1a\x1e.payment.v1.GetPaymentResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/payments/{payment_id}\x12h\n" +
-	"\n" +
-	"COFPayment\x12\x1d.payment.v1.COFPaymentRequest\x1a\x1e.payment.v1.COFPaymentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/payments/cof\x12x\n" +
-	"\x0eSuccessPayment\x12!.payment.v1.SuccessPaymentRequest\x1a\".payment.v1.SuccessPaymentResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/v1/payments/success2\xc8\x03\n" +
-	"\x03COF\x12e\n" +
-	"\n" +
-	"GetCOFbyID\x12\x1d.payment.v1.GetCOFbyIDRequest\x1a\x1e.payment.v1.GetCOFbyIDResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/cof/{cof_id}\x12n\n" +
-	"\x0fGetCOFbyCardNum\x12\x1f.payment.v1.GetCOFbyCardRequest\x1a\x1e.payment.v1.GetCOFbyIDResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/cof/by-card\x12|\n" +
-	"\rDeactivateCOF\x12 .payment.v1.DeactivateCOFRequest\x1a!.payment.v1.DeactivateCOFResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/v1/cof/{cof_id}/deactivate\x12l\n" +
-	"\tEnableCOF\x12\x1c.payment.v1.EnableCOFRequest\x1a\x1d.payment.v1.EnableCOFResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/v1/cof/{cof_id}/enableB\x16Z\x14payment/v1;paymentv1b\x06proto3"
+	"GetPayment\x12\x1d.payment.v1.GetPaymentRequest\x1a\x1e.payment.v1.GetPaymentResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/payments/{payment_id}\x12\x87\x01\n" +
+	"\x10GetPaymentStatus\x12#.payment.v1.GetPaymentStatusRequest\x1a$.payment.v1.GetPaymentStatusResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/payments/{payment_id}/status\x12x\n" +
+	"\x0eSuccessPayment\x12!.payment.v1.SuccessPaymentRequest\x1a\".payment.v1.SuccessPaymentResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/v1/payments/success\x12g\n" +
+	"\fListPayments\x12\x1f.payment.v1.ListPaymentsRequest\x1a .payment.v1.ListPaymentsResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/v1/payments\x12b\n" +
+	"\vHealthCheck\x12\x1e.payment.v1.HealthCheckRequest\x1a\x1f.payment.v1.HealthCheckResponse\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
+	"/v1/healthB\x16Z\x14payment/v1;paymentv1b\x06proto3"
 
 var (
 	file_payment_proto_rawDescOnce sync.Once
@@ -1247,63 +916,50 @@ func file_payment_proto_rawDescGZIP() []byte {
 	return file_payment_proto_rawDescData
 }
 
-var file_payment_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_payment_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_payment_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_payment_proto_goTypes = []any{
-	(PaymentStatus)(0),             // 0: payment.v1.PaymentStatus
-	(*CreatePaymentRequest)(nil),   // 1: payment.v1.CreatePaymentRequest
-	(*CreatePaymentResponse)(nil),  // 2: payment.v1.CreatePaymentResponse
-	(*DeclinePaymentRequest)(nil),  // 3: payment.v1.DeclinePaymentRequest
-	(*DeclinePaymentResponse)(nil), // 4: payment.v1.DeclinePaymentResponse
-	(*RefundPaymentRequest)(nil),   // 5: payment.v1.RefundPaymentRequest
-	(*RefundPaymentResponse)(nil),  // 6: payment.v1.RefundPaymentResponse
-	(*GetPaymentRequest)(nil),      // 7: payment.v1.GetPaymentRequest
-	(*GetPaymentResponse)(nil),     // 8: payment.v1.GetPaymentResponse
-	(*SuccessPaymentRequest)(nil),  // 9: payment.v1.SuccessPaymentRequest
-	(*SuccessPaymentResponse)(nil), // 10: payment.v1.SuccessPaymentResponse
-	(*COFPaymentRequest)(nil),      // 11: payment.v1.COFPaymentRequest
-	(*COFPaymentResponse)(nil),     // 12: payment.v1.COFPaymentResponse
-	(*GetCOFbyIDRequest)(nil),      // 13: payment.v1.GetCOFbyIDRequest
-	(*GetCOFbyCardRequest)(nil),    // 14: payment.v1.GetCOFbyCardRequest
-	(*GetCOFbyIDResponse)(nil),     // 15: payment.v1.GetCOFbyIDResponse
-	(*DeactivateCOFRequest)(nil),   // 16: payment.v1.DeactivateCOFRequest
-	(*DeactivateCOFResponse)(nil),  // 17: payment.v1.DeactivateCOFResponse
-	(*EnableCOFRequest)(nil),       // 18: payment.v1.EnableCOFRequest
-	(*EnableCOFResponse)(nil),      // 19: payment.v1.EnableCOFResponse
-	(*timestamppb.Timestamp)(nil),  // 20: google.protobuf.Timestamp
+	(*CreatePaymentRequest)(nil),     // 0: payment.v1.CreatePaymentRequest
+	(*CreatePaymentResponse)(nil),    // 1: payment.v1.CreatePaymentResponse
+	(*RefundPaymentRequest)(nil),     // 2: payment.v1.RefundPaymentRequest
+	(*RefundPaymentResponse)(nil),    // 3: payment.v1.RefundPaymentResponse
+	(*GetPaymentRequest)(nil),        // 4: payment.v1.GetPaymentRequest
+	(*GetPaymentResponse)(nil),       // 5: payment.v1.GetPaymentResponse
+	(*GetPaymentStatusRequest)(nil),  // 6: payment.v1.GetPaymentStatusRequest
+	(*GetPaymentStatusResponse)(nil), // 7: payment.v1.GetPaymentStatusResponse
+	(*SuccessPaymentRequest)(nil),    // 8: payment.v1.SuccessPaymentRequest
+	(*SuccessPaymentResponse)(nil),   // 9: payment.v1.SuccessPaymentResponse
+	(*ListPaymentsRequest)(nil),      // 10: payment.v1.ListPaymentsRequest
+	(*ListPaymentsResponse)(nil),     // 11: payment.v1.ListPaymentsResponse
+	(*HealthCheckRequest)(nil),       // 12: payment.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),      // 13: payment.v1.HealthCheckResponse
+	(*structpb.Struct)(nil),          // 14: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),    // 15: google.protobuf.Timestamp
 }
 var file_payment_proto_depIdxs = []int32{
-	0,  // 0: payment.v1.CreatePaymentResponse.status:type_name -> payment.v1.PaymentStatus
-	0,  // 1: payment.v1.DeclinePaymentResponse.status:type_name -> payment.v1.PaymentStatus
-	0,  // 2: payment.v1.RefundPaymentResponse.status:type_name -> payment.v1.PaymentStatus
-	0,  // 3: payment.v1.GetPaymentResponse.status:type_name -> payment.v1.PaymentStatus
-	20, // 4: payment.v1.GetPaymentResponse.created_at:type_name -> google.protobuf.Timestamp
-	20, // 5: payment.v1.GetCOFbyIDResponse.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 6: payment.v1.Payment.CreatePayment:input_type -> payment.v1.CreatePaymentRequest
-	3,  // 7: payment.v1.Payment.DeclinePayment:input_type -> payment.v1.DeclinePaymentRequest
-	5,  // 8: payment.v1.Payment.RefundPayment:input_type -> payment.v1.RefundPaymentRequest
-	7,  // 9: payment.v1.Payment.GetPayment:input_type -> payment.v1.GetPaymentRequest
-	11, // 10: payment.v1.Payment.COFPayment:input_type -> payment.v1.COFPaymentRequest
-	9,  // 11: payment.v1.Payment.SuccessPayment:input_type -> payment.v1.SuccessPaymentRequest
-	13, // 12: payment.v1.COF.GetCOFbyID:input_type -> payment.v1.GetCOFbyIDRequest
-	14, // 13: payment.v1.COF.GetCOFbyCardNum:input_type -> payment.v1.GetCOFbyCardRequest
-	16, // 14: payment.v1.COF.DeactivateCOF:input_type -> payment.v1.DeactivateCOFRequest
-	18, // 15: payment.v1.COF.EnableCOF:input_type -> payment.v1.EnableCOFRequest
-	2,  // 16: payment.v1.Payment.CreatePayment:output_type -> payment.v1.CreatePaymentResponse
-	4,  // 17: payment.v1.Payment.DeclinePayment:output_type -> payment.v1.DeclinePaymentResponse
-	6,  // 18: payment.v1.Payment.RefundPayment:output_type -> payment.v1.RefundPaymentResponse
-	8,  // 19: payment.v1.Payment.GetPayment:output_type -> payment.v1.GetPaymentResponse
-	12, // 20: payment.v1.Payment.COFPayment:output_type -> payment.v1.COFPaymentResponse
-	10, // 21: payment.v1.Payment.SuccessPayment:output_type -> payment.v1.SuccessPaymentResponse
-	15, // 22: payment.v1.COF.GetCOFbyID:output_type -> payment.v1.GetCOFbyIDResponse
-	15, // 23: payment.v1.COF.GetCOFbyCardNum:output_type -> payment.v1.GetCOFbyIDResponse
-	17, // 24: payment.v1.COF.DeactivateCOF:output_type -> payment.v1.DeactivateCOFResponse
-	19, // 25: payment.v1.COF.EnableCOF:output_type -> payment.v1.EnableCOFResponse
-	16, // [16:26] is the sub-list for method output_type
-	6,  // [6:16] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	14, // 0: payment.v1.CreatePaymentRequest.metadata:type_name -> google.protobuf.Struct
+	15, // 1: payment.v1.GetPaymentResponse.created_at:type_name -> google.protobuf.Timestamp
+	14, // 2: payment.v1.GetPaymentResponse.metadata:type_name -> google.protobuf.Struct
+	5,  // 3: payment.v1.ListPaymentsResponse.payments:type_name -> payment.v1.GetPaymentResponse
+	15, // 4: payment.v1.HealthCheckResponse.checked_at:type_name -> google.protobuf.Timestamp
+	0,  // 5: payment.v1.Payment.CreatePayment:input_type -> payment.v1.CreatePaymentRequest
+	2,  // 6: payment.v1.Payment.RefundPayment:input_type -> payment.v1.RefundPaymentRequest
+	4,  // 7: payment.v1.Payment.GetPayment:input_type -> payment.v1.GetPaymentRequest
+	6,  // 8: payment.v1.Payment.GetPaymentStatus:input_type -> payment.v1.GetPaymentStatusRequest
+	8,  // 9: payment.v1.Payment.SuccessPayment:input_type -> payment.v1.SuccessPaymentRequest
+	10, // 10: payment.v1.Payment.ListPayments:input_type -> payment.v1.ListPaymentsRequest
+	12, // 11: payment.v1.Payment.HealthCheck:input_type -> payment.v1.HealthCheckRequest
+	1,  // 12: payment.v1.Payment.CreatePayment:output_type -> payment.v1.CreatePaymentResponse
+	3,  // 13: payment.v1.Payment.RefundPayment:output_type -> payment.v1.RefundPaymentResponse
+	5,  // 14: payment.v1.Payment.GetPayment:output_type -> payment.v1.GetPaymentResponse
+	7,  // 15: payment.v1.Payment.GetPaymentStatus:output_type -> payment.v1.GetPaymentStatusResponse
+	9,  // 16: payment.v1.Payment.SuccessPayment:output_type -> payment.v1.SuccessPaymentResponse
+	11, // 17: payment.v1.Payment.ListPayments:output_type -> payment.v1.ListPaymentsResponse
+	13, // 18: payment.v1.Payment.HealthCheck:output_type -> payment.v1.HealthCheckResponse
+	12, // [12:19] is the sub-list for method output_type
+	5,  // [5:12] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_payment_proto_init() }
@@ -1316,14 +972,13 @@ func file_payment_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_payment_proto_rawDesc), len(file_payment_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   19,
+			NumEnums:      0,
+			NumMessages:   14,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   1,
 		},
 		GoTypes:           file_payment_proto_goTypes,
 		DependencyIndexes: file_payment_proto_depIdxs,
-		EnumInfos:         file_payment_proto_enumTypes,
 		MessageInfos:      file_payment_proto_msgTypes,
 	}.Build()
 	File_payment_proto = out.File

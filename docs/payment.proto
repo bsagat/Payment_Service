@@ -4,29 +4,16 @@ package payment.v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "payment/v1;paymentv1";
 
-enum PaymentStatus {
-  PAYMENT_STATUS_UNSPECIFIED = 0;
-  PAYMENT_STATUS_PENDING = 1;
-  PAYMENT_STATUS_SUCCESS = 2;
-  PAYMENT_STATUS_DECLINED = 3;
-  PAYMENT_STATUS_REFUNDED = 4;
-}
+// ==== Service ====
 
-// Payment service
 service Payment {
   rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse) {
     option (google.api.http) = {
       post: "/v1/payments"
-      body: "*"
-    };
-  }
-
-  rpc DeclinePayment(DeclinePaymentRequest) returns (DeclinePaymentResponse) {
-    option (google.api.http) = {
-      post: "/v1/payments/decline"
       body: "*"
     };
   }
@@ -44,10 +31,9 @@ service Payment {
     };
   }
 
-  rpc COFPayment(COFPaymentRequest) returns (COFPaymentResponse) {
+  rpc GetPaymentStatus(GetPaymentStatusRequest) returns (GetPaymentStatusResponse) {
     option (google.api.http) = {
-      post: "/v1/payments/cof"
-      body: "*"
+      get: "/v1/payments/{payment_id}/status"
     };
   }
 
@@ -57,34 +43,16 @@ service Payment {
       body: "*"
     };
   }
-}
 
-// COF service
-service COF {
-  rpc GetCOFbyID(GetCOFbyIDRequest) returns (GetCOFbyIDResponse) {
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse) {
     option (google.api.http) = {
-      get: "/v1/cof/{cof_id}"
+      get: "/v1/payments"
     };
   }
 
-  rpc GetCOFbyCardNum(GetCOFbyCardRequest) returns (GetCOFbyIDResponse) {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {
     option (google.api.http) = {
-      post: "/v1/cof/by-card"
-      body: "*"
-    };
-  }
-
-  rpc DeactivateCOF(DeactivateCOFRequest) returns (DeactivateCOFResponse) {
-    option (google.api.http) = {
-      post: "/v1/cof/{cof_id}/deactivate"
-      body: "*"
-    };
-  }
-
-  rpc EnableCOF(EnableCOFRequest) returns (EnableCOFResponse) {
-    option (google.api.http) = {
-      post: "/v1/cof/{cof_id}/enable"
-      body: "*"
+      get: "/v1/health"
     };
   }
 }
@@ -98,21 +66,14 @@ message CreatePaymentRequest {
   string currency = 4;
   string return_url = 5;
   string error_url = 6;
+  string operation = 7; // вместо enum OperationType
+  string description = 8;
+  google.protobuf.Struct metadata = 9;
 }
 
 message CreatePaymentResponse {
   string payment_id = 1;
-  PaymentStatus status = 2;
-  string payment_url = 3;
-}
-
-message DeclinePaymentRequest {
-  string payment_id = 1;
-  string reason = 2;
-}
-
-message DeclinePaymentResponse {
-  PaymentStatus status = 1;
+  string payment_url = 2;
 }
 
 message RefundPaymentRequest {
@@ -121,7 +82,7 @@ message RefundPaymentRequest {
 }
 
 message RefundPaymentResponse {
-  PaymentStatus status = 1;
+  string status = 1; // вместо enum PaymentStatus
 }
 
 message GetPaymentRequest {
@@ -134,8 +95,19 @@ message GetPaymentResponse {
   string user_id = 3;
   double amount = 4;
   string currency = 5;
-  PaymentStatus status = 6;
+  string status = 6; // вместо enum PaymentStatus
   google.protobuf.Timestamp created_at = 7;
+  string operation = 8; // вместо enum OperationType
+  string broker = 9;
+  google.protobuf.Struct metadata = 10;
+}
+
+message GetPaymentStatusRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentStatusResponse {
+  string status = 1; // вместо enum PaymentStatus
 }
 
 message SuccessPaymentRequest {
@@ -143,56 +115,26 @@ message SuccessPaymentRequest {
 }
 
 message SuccessPaymentResponse {
-  string message = 1;
+  string status = 1; // вместо enum PaymentStatus
 }
 
-message COFPaymentRequest {
-  string cof_id = 1;
-  string payment_id = 2;
-  string return_url = 5;
-  string error_url = 6;
+message ListPaymentsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string user_id = 3;
 }
 
-message COFPaymentResponse {
-  string secure_check_url = 1;
+message ListPaymentsResponse {
+  repeated GetPaymentResponse payments = 1;
+  int32 total = 2;
 }
 
-// ==== COF ====
+// ==== HealthCheck ====
 
-message GetCOFbyIDRequest {
-  string cof_id = 1;
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  bool database_ok = 1;
+  bool broker_ok = 2;
+  google.protobuf.Timestamp checked_at = 3;
 }
-
-message GetCOFbyCardRequest {
-  string last4 = 1;
-  string exp_month = 2;
-  string exp_year = 3;
-  string user_id = 4;
-}
-
-message GetCOFbyIDResponse {
-  string cof_id = 1;
-  string user_id = 2;
-  string last4 = 3;
-  string exp_month = 4;
-  string exp_year = 5;
-  string status = 6;
-  google.protobuf.Timestamp created_at = 7;
-}
-
-message DeactivateCOFRequest {
-  string cof_id = 1;
-}
-
-message DeactivateCOFResponse {
-  string status = 1;
-}
-
-message EnableCOFRequest {
-  string cof_id = 1;
-}
-
-message EnableCOFResponse {
-  string status = 1;
-}
-

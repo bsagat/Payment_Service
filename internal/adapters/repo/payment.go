@@ -4,30 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"payment/internal/domain"
+	"payment/internal/domain/models"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PaymentRepo struct {
+type PostgresPaymentRepo struct {
 	pool *pgxpool.Pool
 }
 
-func NewPaymentRepo(pool *pgxpool.Pool) *PaymentRepo {
-	return &PaymentRepo{
+func NewPostgresPaymentRepo(pool *pgxpool.Pool) *PostgresPaymentRepo {
+	return &PostgresPaymentRepo{
 		pool: pool,
 	}
 }
 
 var (
 	ErrPaymentNotFound       = errors.New("payment is not found")
+	ErrOrderIDConflict       = errors.New("orderID must be unique")
 	ErrPaymentStatusNotFound = errors.New("payment status info is not found")
 )
 
 // Добавляет информацию о платеже в БД
-func (repo *PaymentRepo) Create(ctx context.Context, transaction domain.Payment) error {
-	const op = "PaymentRepo.Create"
+func (repo *PostgresPaymentRepo) Create(ctx context.Context, transaction models.Payment) error {
+	const op = "PostgresPaymentRepo.Create"
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -59,8 +60,8 @@ func (repo *PaymentRepo) Create(ctx context.Context, transaction domain.Payment)
 	return tx.Commit(ctx)
 }
 
-func (repo *PaymentRepo) GetTransactionByOrderID(ctx context.Context, orderID string) (domain.Payment, error) {
-	const op = "PaymentRepo.GetTransactionByOrderID"
+func (repo *PostgresPaymentRepo) GetTransactionByOrderID(ctx context.Context, orderID string) (*models.Payment, error) {
+	const op = "PostgresPaymentRepo.GetTransactionByOrderID"
 	query := `
 		SELECT 
 			f.Payment_id,
@@ -81,19 +82,19 @@ func (repo *PaymentRepo) GetTransactionByOrderID(ctx context.Context, orderID st
 			s.Created_at DESC
 		LIMIT 1;`
 
-	var payment domain.Payment
+	var payment models.Payment
 	if err := repo.pool.QueryRow(ctx, query, orderID).
 		Scan(&payment.ID, &payment.UserID, &payment.OrderID, &payment.Amount, &payment.Currency, &payment.Broker, &payment.Operation, &payment.Status, &payment.CreatedAt); err != nil {
 		if err == pgx.ErrNoRows {
-			return domain.Payment{}, fmt.Errorf("%s: %w", op, ErrPaymentNotFound)
+			return nil, fmt.Errorf("%s: %w", op, ErrPaymentNotFound)
 		}
-		return domain.Payment{}, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return payment, nil
+	return &payment, nil
 }
 
-func (repo *PaymentRepo) GetTransactionByPaymentID(ctx context.Context, paymentID string) (domain.Payment, error) {
-	const op = "PaymentRepo.GetTransactionByPaymentID"
+func (repo *PostgresPaymentRepo) GetTransactionByPaymentID(ctx context.Context, paymentID string) (*models.Payment, error) {
+	const op = "PostgresPaymentRepo.GetTransactionByPaymentID"
 	query := `
 		SELECT 
 			f.Payment_id,
@@ -114,23 +115,23 @@ func (repo *PaymentRepo) GetTransactionByPaymentID(ctx context.Context, paymentI
 			s.Created_at DESC
 		LIMIT 1;`
 
-	var payment domain.Payment
+	var payment models.Payment
 	if err := repo.pool.QueryRow(ctx, query, paymentID).
 		Scan(&payment.ID, &payment.UserID, &payment.OrderID, &payment.Amount, &payment.Currency, &payment.Broker, &payment.Operation, &payment.Status, &payment.CreatedAt); err != nil {
 		if err == pgx.ErrNoRows {
-			return domain.Payment{}, fmt.Errorf("%s: %w", op, ErrPaymentNotFound)
+			return nil, fmt.Errorf("%s: %w", op, ErrPaymentNotFound)
 		}
-		return domain.Payment{}, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return payment, nil
+	return &payment, nil
 }
 
 // Получает полную информацию о последнем статусе заказа
-func (repo *PaymentRepo) GetStatus(ctx context.Context, orderID string) (domain.PaymentStatus, error) {
-	const op = "PaymentRepo.GetStatus"
+func (repo *PostgresPaymentRepo) GetStatus(ctx context.Context, orderID string) (*models.PaymentStatus, error) {
+	const op = "PostgresPaymentRepo.GetStatus"
 	query := `
 	SELECT 
-		s.Status 
+		s.Status, s.Order_id, s.Created_at 
 	FROM 
 		Status s
 	WHERE 
@@ -140,19 +141,19 @@ func (repo *PaymentRepo) GetStatus(ctx context.Context, orderID string) (domain.
 	LIMIT 1;
 	`
 
-	var status domain.PaymentStatus
-	if err := repo.pool.QueryRow(ctx, query, orderID).Scan(&status); err != nil {
+	var status models.PaymentStatus
+	if err := repo.pool.QueryRow(ctx, query, orderID).Scan(&status.Status, &status.CreatedAt); err != nil {
 		if err == pgx.ErrNoRows {
-			return "", fmt.Errorf("%s: %w", op, ErrPaymentStatusNotFound)
+			return nil, fmt.Errorf("%s: %w", op, ErrPaymentStatusNotFound)
 		}
-		return "", fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return status, nil
+	return &status, nil
 }
 
 // Обновляет существующий заказ
-func (repo *PaymentRepo) UpdateByOrderID(ctx context.Context, transaction domain.Payment) error {
-	const op = "PaymentRepo.UpdateByOrderID"
+func (repo *PostgresPaymentRepo) UpdateByOrderID(ctx context.Context, transaction models.Payment) error {
+	const op = "PostgresPaymentRepo.UpdateByOrderID"
 	query := `
 		UPDATE 
 			Transactions
@@ -177,8 +178,8 @@ func (repo *PaymentRepo) UpdateByOrderID(ctx context.Context, transaction domain
 	return nil
 }
 
-func (repo *PaymentRepo) Delete(ctx context.Context, orderID string) error {
-	const op = "PaymentRepo.Delete"
+func (repo *PostgresPaymentRepo) Delete(ctx context.Context, orderID string) error {
+	const op = "PostgresPaymentRepo.Delete"
 	query := `
 		DELETE FROM 
 			Transactions
@@ -193,4 +194,45 @@ func (repo *PaymentRepo) Delete(ctx context.Context, orderID string) error {
 		return fmt.Errorf("%s: %w", op, ErrPaymentNotFound)
 	}
 	return nil
+}
+
+func (repo *PostgresPaymentRepo) MarkStatus(ctx context.Context, orderID string, status models.StatusType) error {
+	const op = "PostgresPaymentRepo.MarkStatus"
+
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	query := `
+		UPDATE 
+			Transactions
+		SET 
+			Current_status = $1
+		WHERE
+			 Order_id = $2;`
+
+	res, err := tx.Exec(ctx, query, status, orderID)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if res.RowsAffected() == 0 {
+		tx.Rollback(ctx)
+		return fmt.Errorf("%s: %w", op, ErrPaymentNotFound)
+	}
+
+	query = `
+	INSERT INTO 
+		Status(Order_id, Status)
+	VALUES 
+		($1, $2);`
+	_, err = tx.Exec(ctx, query, orderID, status)
+	if err != nil {
+		tx.Rollback(ctx)
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return tx.Commit(ctx)
 }

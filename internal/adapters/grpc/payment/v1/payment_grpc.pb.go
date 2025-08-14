@@ -19,26 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Payment_CreatePayment_FullMethodName  = "/payment.v1.Payment/CreatePayment"
-	Payment_DeclinePayment_FullMethodName = "/payment.v1.Payment/DeclinePayment"
-	Payment_RefundPayment_FullMethodName  = "/payment.v1.Payment/RefundPayment"
-	Payment_GetPayment_FullMethodName     = "/payment.v1.Payment/GetPayment"
-	Payment_COFPayment_FullMethodName     = "/payment.v1.Payment/COFPayment"
-	Payment_SuccessPayment_FullMethodName = "/payment.v1.Payment/SuccessPayment"
+	Payment_CreatePayment_FullMethodName    = "/payment.v1.Payment/CreatePayment"
+	Payment_RefundPayment_FullMethodName    = "/payment.v1.Payment/RefundPayment"
+	Payment_GetPayment_FullMethodName       = "/payment.v1.Payment/GetPayment"
+	Payment_GetPaymentStatus_FullMethodName = "/payment.v1.Payment/GetPaymentStatus"
+	Payment_SuccessPayment_FullMethodName   = "/payment.v1.Payment/SuccessPayment"
+	Payment_ListPayments_FullMethodName     = "/payment.v1.Payment/ListPayments"
+	Payment_HealthCheck_FullMethodName      = "/payment.v1.Payment/HealthCheck"
 )
 
 // PaymentClient is the client API for Payment service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Payment service
 type PaymentClient interface {
 	CreatePayment(ctx context.Context, in *CreatePaymentRequest, opts ...grpc.CallOption) (*CreatePaymentResponse, error)
-	DeclinePayment(ctx context.Context, in *DeclinePaymentRequest, opts ...grpc.CallOption) (*DeclinePaymentResponse, error)
 	RefundPayment(ctx context.Context, in *RefundPaymentRequest, opts ...grpc.CallOption) (*RefundPaymentResponse, error)
 	GetPayment(ctx context.Context, in *GetPaymentRequest, opts ...grpc.CallOption) (*GetPaymentResponse, error)
-	COFPayment(ctx context.Context, in *COFPaymentRequest, opts ...grpc.CallOption) (*COFPaymentResponse, error)
+	GetPaymentStatus(ctx context.Context, in *GetPaymentStatusRequest, opts ...grpc.CallOption) (*GetPaymentStatusResponse, error)
 	SuccessPayment(ctx context.Context, in *SuccessPaymentRequest, opts ...grpc.CallOption) (*SuccessPaymentResponse, error)
+	ListPayments(ctx context.Context, in *ListPaymentsRequest, opts ...grpc.CallOption) (*ListPaymentsResponse, error)
+	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
 
 type paymentClient struct {
@@ -53,16 +53,6 @@ func (c *paymentClient) CreatePayment(ctx context.Context, in *CreatePaymentRequ
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreatePaymentResponse)
 	err := c.cc.Invoke(ctx, Payment_CreatePayment_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *paymentClient) DeclinePayment(ctx context.Context, in *DeclinePaymentRequest, opts ...grpc.CallOption) (*DeclinePaymentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeclinePaymentResponse)
-	err := c.cc.Invoke(ctx, Payment_DeclinePayment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,10 +79,10 @@ func (c *paymentClient) GetPayment(ctx context.Context, in *GetPaymentRequest, o
 	return out, nil
 }
 
-func (c *paymentClient) COFPayment(ctx context.Context, in *COFPaymentRequest, opts ...grpc.CallOption) (*COFPaymentResponse, error) {
+func (c *paymentClient) GetPaymentStatus(ctx context.Context, in *GetPaymentStatusRequest, opts ...grpc.CallOption) (*GetPaymentStatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(COFPaymentResponse)
-	err := c.cc.Invoke(ctx, Payment_COFPayment_FullMethodName, in, out, cOpts...)
+	out := new(GetPaymentStatusResponse)
+	err := c.cc.Invoke(ctx, Payment_GetPaymentStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,18 +99,37 @@ func (c *paymentClient) SuccessPayment(ctx context.Context, in *SuccessPaymentRe
 	return out, nil
 }
 
+func (c *paymentClient) ListPayments(ctx context.Context, in *ListPaymentsRequest, opts ...grpc.CallOption) (*ListPaymentsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPaymentsResponse)
+	err := c.cc.Invoke(ctx, Payment_ListPayments_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HealthCheckResponse)
+	err := c.cc.Invoke(ctx, Payment_HealthCheck_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentServer is the server API for Payment service.
 // All implementations must embed UnimplementedPaymentServer
 // for forward compatibility.
-//
-// Payment service
 type PaymentServer interface {
 	CreatePayment(context.Context, *CreatePaymentRequest) (*CreatePaymentResponse, error)
-	DeclinePayment(context.Context, *DeclinePaymentRequest) (*DeclinePaymentResponse, error)
 	RefundPayment(context.Context, *RefundPaymentRequest) (*RefundPaymentResponse, error)
 	GetPayment(context.Context, *GetPaymentRequest) (*GetPaymentResponse, error)
-	COFPayment(context.Context, *COFPaymentRequest) (*COFPaymentResponse, error)
+	GetPaymentStatus(context.Context, *GetPaymentStatusRequest) (*GetPaymentStatusResponse, error)
 	SuccessPayment(context.Context, *SuccessPaymentRequest) (*SuccessPaymentResponse, error)
+	ListPayments(context.Context, *ListPaymentsRequest) (*ListPaymentsResponse, error)
+	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedPaymentServer()
 }
 
@@ -134,20 +143,23 @@ type UnimplementedPaymentServer struct{}
 func (UnimplementedPaymentServer) CreatePayment(context.Context, *CreatePaymentRequest) (*CreatePaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePayment not implemented")
 }
-func (UnimplementedPaymentServer) DeclinePayment(context.Context, *DeclinePaymentRequest) (*DeclinePaymentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeclinePayment not implemented")
-}
 func (UnimplementedPaymentServer) RefundPayment(context.Context, *RefundPaymentRequest) (*RefundPaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefundPayment not implemented")
 }
 func (UnimplementedPaymentServer) GetPayment(context.Context, *GetPaymentRequest) (*GetPaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPayment not implemented")
 }
-func (UnimplementedPaymentServer) COFPayment(context.Context, *COFPaymentRequest) (*COFPaymentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method COFPayment not implemented")
+func (UnimplementedPaymentServer) GetPaymentStatus(context.Context, *GetPaymentStatusRequest) (*GetPaymentStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPaymentStatus not implemented")
 }
 func (UnimplementedPaymentServer) SuccessPayment(context.Context, *SuccessPaymentRequest) (*SuccessPaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SuccessPayment not implemented")
+}
+func (UnimplementedPaymentServer) ListPayments(context.Context, *ListPaymentsRequest) (*ListPaymentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPayments not implemented")
+}
+func (UnimplementedPaymentServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
 }
 func (UnimplementedPaymentServer) mustEmbedUnimplementedPaymentServer() {}
 func (UnimplementedPaymentServer) testEmbeddedByValue()                 {}
@@ -188,24 +200,6 @@ func _Payment_CreatePayment_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Payment_DeclinePayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeclinePaymentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PaymentServer).DeclinePayment(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Payment_DeclinePayment_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServer).DeclinePayment(ctx, req.(*DeclinePaymentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Payment_RefundPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RefundPaymentRequest)
 	if err := dec(in); err != nil {
@@ -242,20 +236,20 @@ func _Payment_GetPayment_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Payment_COFPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(COFPaymentRequest)
+func _Payment_GetPaymentStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPaymentStatusRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PaymentServer).COFPayment(ctx, in)
+		return srv.(PaymentServer).GetPaymentStatus(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Payment_COFPayment_FullMethodName,
+		FullMethod: Payment_GetPaymentStatus_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServer).COFPayment(ctx, req.(*COFPaymentRequest))
+		return srv.(PaymentServer).GetPaymentStatus(ctx, req.(*GetPaymentStatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -278,6 +272,42 @@ func _Payment_SuccessPayment_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Payment_ListPayments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPaymentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServer).ListPayments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Payment_ListPayments_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServer).ListPayments(ctx, req.(*ListPaymentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServer).HealthCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Payment_HealthCheck_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServer).HealthCheck(ctx, req.(*HealthCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Payment_ServiceDesc is the grpc.ServiceDesc for Payment service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -290,10 +320,6 @@ var Payment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Payment_CreatePayment_Handler,
 		},
 		{
-			MethodName: "DeclinePayment",
-			Handler:    _Payment_DeclinePayment_Handler,
-		},
-		{
 			MethodName: "RefundPayment",
 			Handler:    _Payment_RefundPayment_Handler,
 		},
@@ -302,232 +328,20 @@ var Payment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Payment_GetPayment_Handler,
 		},
 		{
-			MethodName: "COFPayment",
-			Handler:    _Payment_COFPayment_Handler,
+			MethodName: "GetPaymentStatus",
+			Handler:    _Payment_GetPaymentStatus_Handler,
 		},
 		{
 			MethodName: "SuccessPayment",
 			Handler:    _Payment_SuccessPayment_Handler,
 		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "payment.proto",
-}
-
-const (
-	COF_GetCOFbyID_FullMethodName      = "/payment.v1.COF/GetCOFbyID"
-	COF_GetCOFbyCardNum_FullMethodName = "/payment.v1.COF/GetCOFbyCardNum"
-	COF_DeactivateCOF_FullMethodName   = "/payment.v1.COF/DeactivateCOF"
-	COF_EnableCOF_FullMethodName       = "/payment.v1.COF/EnableCOF"
-)
-
-// COFClient is the client API for COF service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// COF service
-type COFClient interface {
-	GetCOFbyID(ctx context.Context, in *GetCOFbyIDRequest, opts ...grpc.CallOption) (*GetCOFbyIDResponse, error)
-	GetCOFbyCardNum(ctx context.Context, in *GetCOFbyCardRequest, opts ...grpc.CallOption) (*GetCOFbyIDResponse, error)
-	DeactivateCOF(ctx context.Context, in *DeactivateCOFRequest, opts ...grpc.CallOption) (*DeactivateCOFResponse, error)
-	EnableCOF(ctx context.Context, in *EnableCOFRequest, opts ...grpc.CallOption) (*EnableCOFResponse, error)
-}
-
-type cOFClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewCOFClient(cc grpc.ClientConnInterface) COFClient {
-	return &cOFClient{cc}
-}
-
-func (c *cOFClient) GetCOFbyID(ctx context.Context, in *GetCOFbyIDRequest, opts ...grpc.CallOption) (*GetCOFbyIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCOFbyIDResponse)
-	err := c.cc.Invoke(ctx, COF_GetCOFbyID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cOFClient) GetCOFbyCardNum(ctx context.Context, in *GetCOFbyCardRequest, opts ...grpc.CallOption) (*GetCOFbyIDResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCOFbyIDResponse)
-	err := c.cc.Invoke(ctx, COF_GetCOFbyCardNum_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cOFClient) DeactivateCOF(ctx context.Context, in *DeactivateCOFRequest, opts ...grpc.CallOption) (*DeactivateCOFResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeactivateCOFResponse)
-	err := c.cc.Invoke(ctx, COF_DeactivateCOF_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *cOFClient) EnableCOF(ctx context.Context, in *EnableCOFRequest, opts ...grpc.CallOption) (*EnableCOFResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(EnableCOFResponse)
-	err := c.cc.Invoke(ctx, COF_EnableCOF_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// COFServer is the server API for COF service.
-// All implementations must embed UnimplementedCOFServer
-// for forward compatibility.
-//
-// COF service
-type COFServer interface {
-	GetCOFbyID(context.Context, *GetCOFbyIDRequest) (*GetCOFbyIDResponse, error)
-	GetCOFbyCardNum(context.Context, *GetCOFbyCardRequest) (*GetCOFbyIDResponse, error)
-	DeactivateCOF(context.Context, *DeactivateCOFRequest) (*DeactivateCOFResponse, error)
-	EnableCOF(context.Context, *EnableCOFRequest) (*EnableCOFResponse, error)
-	mustEmbedUnimplementedCOFServer()
-}
-
-// UnimplementedCOFServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedCOFServer struct{}
-
-func (UnimplementedCOFServer) GetCOFbyID(context.Context, *GetCOFbyIDRequest) (*GetCOFbyIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCOFbyID not implemented")
-}
-func (UnimplementedCOFServer) GetCOFbyCardNum(context.Context, *GetCOFbyCardRequest) (*GetCOFbyIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCOFbyCardNum not implemented")
-}
-func (UnimplementedCOFServer) DeactivateCOF(context.Context, *DeactivateCOFRequest) (*DeactivateCOFResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeactivateCOF not implemented")
-}
-func (UnimplementedCOFServer) EnableCOF(context.Context, *EnableCOFRequest) (*EnableCOFResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EnableCOF not implemented")
-}
-func (UnimplementedCOFServer) mustEmbedUnimplementedCOFServer() {}
-func (UnimplementedCOFServer) testEmbeddedByValue()             {}
-
-// UnsafeCOFServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to COFServer will
-// result in compilation errors.
-type UnsafeCOFServer interface {
-	mustEmbedUnimplementedCOFServer()
-}
-
-func RegisterCOFServer(s grpc.ServiceRegistrar, srv COFServer) {
-	// If the following call pancis, it indicates UnimplementedCOFServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&COF_ServiceDesc, srv)
-}
-
-func _COF_GetCOFbyID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCOFbyIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(COFServer).GetCOFbyID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: COF_GetCOFbyID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(COFServer).GetCOFbyID(ctx, req.(*GetCOFbyIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _COF_GetCOFbyCardNum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCOFbyCardRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(COFServer).GetCOFbyCardNum(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: COF_GetCOFbyCardNum_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(COFServer).GetCOFbyCardNum(ctx, req.(*GetCOFbyCardRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _COF_DeactivateCOF_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeactivateCOFRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(COFServer).DeactivateCOF(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: COF_DeactivateCOF_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(COFServer).DeactivateCOF(ctx, req.(*DeactivateCOFRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _COF_EnableCOF_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EnableCOFRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(COFServer).EnableCOF(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: COF_EnableCOF_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(COFServer).EnableCOF(ctx, req.(*EnableCOFRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// COF_ServiceDesc is the grpc.ServiceDesc for COF service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var COF_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "payment.v1.COF",
-	HandlerType: (*COFServer)(nil),
-	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetCOFbyID",
-			Handler:    _COF_GetCOFbyID_Handler,
+			MethodName: "ListPayments",
+			Handler:    _Payment_ListPayments_Handler,
 		},
 		{
-			MethodName: "GetCOFbyCardNum",
-			Handler:    _COF_GetCOFbyCardNum_Handler,
-		},
-		{
-			MethodName: "DeactivateCOF",
-			Handler:    _COF_DeactivateCOF_Handler,
-		},
-		{
-			MethodName: "EnableCOF",
-			Handler:    _COF_EnableCOF_Handler,
+			MethodName: "HealthCheck",
+			Handler:    _Payment_HealthCheck_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
