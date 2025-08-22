@@ -7,7 +7,6 @@ import (
 type PaymentOperation string
 
 const (
-	COFpayment = "COF_payment"
 	URLpayment = "URL_payment"
 )
 

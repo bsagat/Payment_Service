@@ -21,5 +21,18 @@ const (
 	PaymentReqProcessed = "payment_processed"
 	ValidationFailed    = "validation_failed"
 
+	// CRUD операций с платежами
+	CreatePayment    = "create_payment"
+	GetPayment       = "get_payment"
+	GetPaymentStatus = "get_payment_status"
+	ListPayments     = "list_payments"
+
+	// Изменение состояния платежа
+	RefundPayment  = "refund_payment"
+	SuccessPayment = "success_payment"
+	AuthPayment    = "auth_payment"
+	DepositPayment = "deposit_payment"
+	ReversePayment = "reversal_payment"
+
 	PaymentTransactionFail = "payment_broker_transaction_failed"
 )

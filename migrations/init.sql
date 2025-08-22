@@ -1,7 +1,7 @@
 SET TIMEZONE = 'Asia/Almaty';
 
-CREATE TYPE status_enum AS ENUM ('CREATED','AUTHORIZED','APPROVED','DEPOSITED','DECLINED','REFUNDED');
-CREATE TYPE operation_enum AS ENUM ('COF_payment','URL_payment');
+CREATE TYPE status_enum AS ENUM ('CREATED','REVERSED','APPROVED','DEPOSITED','DECLINED','REFUNDED');
+CREATE TYPE operation_enum AS ENUM ('URL_payment');
 
 CREATE TABLE Transactions (
     Payment_id VARCHAR(256) PRIMARY KEY,
@@ -16,10 +16,10 @@ CREATE TABLE Transactions (
 );
 
 CREATE TABLE TransactionStatus (
-    Order_id VARCHAR(256) NOT NULL REFERENCES Transactions(Order_id) ON DELETE CASCADE,
+    Payment_id VARCHAR(256) NOT NULL REFERENCES Transactions(Payment_id) ON DELETE CASCADE,
     Created_at TIMESTAMPTZ DEFAULT NOW(),
     Status status_enum NOT NULL,
-    PRIMARY KEY (Order_id, Created_at)
+    PRIMARY KEY (Payment_id, Created_at)
 );
 
 CREATE TABLE Refunds (
@@ -27,8 +27,7 @@ CREATE TABLE Refunds (
     Payment_id VARCHAR(256) REFERENCES Transactions(Payment_id) ON DELETE CASCADE,
     Amount NUMERIC(18,2) NOT NULL,
     Reason TEXT,
-    Created_at TIMESTAMPTZ DEFAULT NOW(),
-    Status status_enum NOT NULL DEFAULT 'CREATED'
+    Created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_transactions_user ON Transactions(User_id);

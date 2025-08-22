@@ -2,6 +2,7 @@ package bereke
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"payment/internal/domain/models"
 	"time"
@@ -10,10 +11,33 @@ import (
 	"github.com/bsagat/bereke-merchant-api/models/code"
 )
 
+var (
+	ErrNoSuchOrder         = errors.New("no such order")
+	ErrOperationImpossible = errors.New("impossible for current transaction state")
+)
+
 func (c *BerekeClient) CreateOrder(ctx context.Context, payment *models.Payment, returnURL, errorURL string) (string, error) {
 	const op = "BerekeClient.CreateOrder"
 
 	res, err := c.merchant.RegisterOrderByNumber(ctx, payment.OrderID, payment.Amount, money.ToNumeric(payment.Currency), returnURL, errorURL)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	if res.ErrorCode != code.Success {
+		return "", fmt.Errorf("%s: %d %s", op, res.ErrorCode, res.ErrorMessage)
+	}
+
+	payment.ID = res.OrderID
+	payment.Broker = Bereke_Broker
+
+	return res.FormURL, nil
+}
+
+func (c *BerekeClient) CreateAuthOrder(ctx context.Context, payment *models.Payment, returnURL, errorURL string) (string, error) {
+	const op = "BerekeClient.CreateAuthOrder"
+
+	res, err := c.merchant.AuthOrderByNumber(ctx, payment.OrderID, payment.Amount, money.ToNumeric(payment.Currency), returnURL, errorURL)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -98,10 +122,10 @@ func (c *BerekeClient) RefundOrder(ctx context.Context, orderID string, amount f
 	return nil
 }
 
-func (c *BerekeClient) CancelOrder(ctx context.Context, orderID string) error {
-	const op = "BerekeClient.CancelOrder"
+func (c *BerekeClient) DepositOrder(ctx context.Context, orderID string, amount float64, currency string) error {
+	const op = "BerekeClient.DepositOrder"
 
-	res, err := c.merchant.CancelOrderByID(ctx, orderID)
+	res, err := c.merchant.DepositOrderByNumber(ctx, orderID, amount, money.ToNumeric(currency))
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

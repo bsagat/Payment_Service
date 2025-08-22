@@ -3,7 +3,7 @@ module payment
 go 1.24.0
 
 require (
-	github.com/bsagat/bereke-merchant-api v1.0.4
+	github.com/bsagat/bereke-merchant-api v1.0.5
 	github.com/bsagat/envzilla/v2 v2.0.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1
 	github.com/jackc/pgx/v5 v5.7.5

@@ -18,9 +18,30 @@ service Payment {
     };
   }
 
+  rpc AuthPayment(AuthPaymentRequest) returns (AuthPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/auth"
+      body: "*"
+    };
+  }
+
+  rpc DepositPayment(DepositPaymentRequest) returns (DepositPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/deposit"
+      body: "*"
+    };
+  }
+
   rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse) {
     option (google.api.http) = {
       post: "/v1/payments/refund"
+      body: "*"
+    };
+  }
+
+  rpc ReversalPayment(ReversalPaymentRequest) returns (ReversalPaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/reversal"
       body: "*"
     };
   }
@@ -66,14 +87,38 @@ message CreatePaymentRequest {
   string currency = 4;
   string return_url = 5;
   string error_url = 6;
-  string operation = 7; // вместо enum OperationType
-  string description = 8;
-  google.protobuf.Struct metadata = 9;
+  string operation = 7;
+  google.protobuf.Struct metadata = 8;
 }
 
 message CreatePaymentResponse {
   string payment_id = 1;
   string payment_url = 2;
+}
+
+message AuthPaymentRequest {
+  string order_id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string return_url = 5;
+  string error_url = 6;
+  google.protobuf.Struct metadata = 7;
+}
+
+message AuthPaymentResponse {
+  string payment_id = 1;
+  string payment_url = 2;
+}
+
+message DepositPaymentRequest {
+  string payment_id = 1;
+  double amount = 2;
+  string currency = 3;
+}
+
+message DepositPaymentResponse {
+  string status = 1;
 }
 
 message RefundPaymentRequest {
@@ -82,7 +127,17 @@ message RefundPaymentRequest {
 }
 
 message RefundPaymentResponse {
-  string status = 1; // вместо enum PaymentStatus
+  string status = 1;
+}
+
+message ReversalPaymentRequest {
+  string payment_id = 1;
+  double amount = 2;
+  string currency = 3;
+}
+
+message ReversalPaymentResponse {
+  string status = 1; 
 }
 
 message GetPaymentRequest {
@@ -95,9 +150,9 @@ message GetPaymentResponse {
   string user_id = 3;
   double amount = 4;
   string currency = 5;
-  string status = 6; // вместо enum PaymentStatus
+  string status = 6;
   google.protobuf.Timestamp created_at = 7;
-  string operation = 8; // вместо enum OperationType
+  string operation = 8;
   string broker = 9;
   google.protobuf.Struct metadata = 10;
 }
@@ -107,7 +162,7 @@ message GetPaymentStatusRequest {
 }
 
 message GetPaymentStatusResponse {
-  string status = 1; // вместо enum PaymentStatus
+  string status = 1;
 }
 
 message SuccessPaymentRequest {
@@ -115,7 +170,7 @@ message SuccessPaymentRequest {
 }
 
 message SuccessPaymentResponse {
-  string status = 1; // вместо enum PaymentStatus
+  string status = 1;
 }
 
 message ListPaymentsRequest {

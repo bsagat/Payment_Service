@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	paymentv1 "payment/internal/adapters/grpc/payment/v1"
-	"payment/internal/domain/models"
 	"payment/internal/domain/ports"
 	"payment/internal/service"
 	"payment/pkg/logger"
@@ -32,7 +31,7 @@ func (s *PaymentServer) CreatePayment(ctx context.Context, req *paymentv1.Create
 		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
 	}
 
-	payment, paymentUrl, err := s.service.CreatePayment(ctx, req.OrderId, req.UserId, req.Amount, req.Currency, req.ReturnUrl, req.ErrorUrl)
+	payment, paymentUrl, err := s.service.CreatePayment(ctx, req.OrderId, req.UserId, req.Amount, req.Currency, req.Operation, req.ReturnUrl, req.ErrorUrl)
 	if err != nil {
 		return nil, status.Errorf(GetGrpcCode(err), "failed to create payment: %v", err)
 	}
@@ -40,6 +39,37 @@ func (s *PaymentServer) CreatePayment(ctx context.Context, req *paymentv1.Create
 	return &paymentv1.CreatePaymentResponse{
 		PaymentId:  payment.ID,
 		PaymentUrl: paymentUrl,
+	}, nil
+}
+
+func (s *PaymentServer) AuthPayment(ctx context.Context, req *paymentv1.AuthPaymentRequest) (*paymentv1.AuthPaymentResponse, error) {
+	if err := ValidateAuthOrderReq(req); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
+	}
+
+	payment, paymentUrl, err := s.service.AuthPayment(ctx, req.OrderId, req.UserId, req.Amount, req.Currency, req.ReturnUrl, req.ErrorUrl)
+	if err != nil {
+		return nil, status.Errorf(GetGrpcCode(err), "failed to auth payment: %v", err)
+	}
+
+	return &paymentv1.AuthPaymentResponse{
+		PaymentId:  payment.ID,
+		PaymentUrl: paymentUrl,
+	}, nil
+}
+
+func (s *PaymentServer) DepositPayment(ctx context.Context, req *paymentv1.DepositPaymentRequest) (*paymentv1.DepositPaymentResponse, error) {
+	if err := ValidateDepositOrderReq(req); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
+	}
+
+	state, err := s.service.DepositPayment(ctx, req.PaymentId, req.Amount, req.Currency)
+	if err != nil {
+		return nil, status.Errorf(GetGrpcCode(err), "failed to deposit payment: %v", err)
+	}
+
+	return &paymentv1.DepositPaymentResponse{
+		Status: string(state),
 	}, nil
 }
 
@@ -61,6 +91,8 @@ func (s *PaymentServer) GetPayment(ctx context.Context, req *paymentv1.GetPaymen
 		Currency:  payment.Currency,
 		Status:    string(payment.Status),
 		CreatedAt: timestamppb.New(payment.CreatedAt),
+		Operation: string(payment.Operation),
+		Broker:    payment.Broker,
 	}, nil
 }
 
@@ -84,12 +116,13 @@ func (s *PaymentServer) RefundPayment(ctx context.Context, req *paymentv1.Refund
 		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
 	}
 
-	if err := s.service.RefundPayment(ctx, req.PaymentId, req.Reason); err != nil {
+	stat, err := s.service.RefundPayment(ctx, req.PaymentId, req.Reason)
+	if err != nil {
 		return nil, status.Errorf(GetGrpcCode(err), "failed to refund payment: %v", err)
 	}
 
 	return &paymentv1.RefundPaymentResponse{
-		Status: string(models.StatusRefunded),
+		Status: string(stat),
 	}, nil
 }
 
@@ -98,12 +131,13 @@ func (s *PaymentServer) SuccessPayment(ctx context.Context, req *paymentv1.Succe
 		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
 	}
 
-	if err := s.service.SuccessPayment(ctx, req.PaymentId); err != nil {
+	stat, err := s.service.SuccessPayment(ctx, req.PaymentId)
+	if err != nil {
 		return nil, status.Errorf(GetGrpcCode(err), "failed to set payment status to success: %v", err)
 	}
 
 	return &paymentv1.SuccessPaymentResponse{
-		Status: string(models.StatusDeposited),
+		Status: string(stat),
 	}, nil
 }
 
@@ -117,7 +151,29 @@ func (s *PaymentServer) HealthCheck(ctx context.Context, _ *paymentv1.HealthChec
 	}, nil
 }
 
-func (s *PaymentServer) ListPayments(context.Context, *paymentv1.ListPaymentsRequest) (*paymentv1.ListPaymentsResponse, error) {
-	// TODO: add new method
-	return &paymentv1.ListPaymentsResponse{}, nil
+func (s *PaymentServer) ListPayments(ctx context.Context, req *paymentv1.ListPaymentsRequest) (*paymentv1.ListPaymentsResponse, error) {
+	if err := ValidateListPayments(req); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
+	}
+
+	paymentList, err := s.service.PaymentsList(ctx, req.UserId, int(req.Page), int(req.PageSize))
+	if err != nil {
+		return nil, status.Errorf(GetGrpcCode(err), "failed to get payments list: %v", err)
+	}
+
+	return mapPaymentsToResponse(paymentList), nil
+}
+func (s *PaymentServer) ReversalPayment(ctx context.Context, req *paymentv1.ReversalPaymentRequest) (*paymentv1.ReversalPaymentResponse, error) {
+	if err := ValidateReversalOrderReq(req); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request body is invalid: %v", err)
+	}
+
+	state, err := s.service.ReversalPayment(ctx, req.PaymentId, req.Amount, req.Currency)
+	if err != nil {
+		return nil, status.Errorf(GetGrpcCode(err), "failed to deposit payment: %v", err)
+	}
+
+	return &paymentv1.ReversalPaymentResponse{
+		Status: string(state),
+	}, nil
 }

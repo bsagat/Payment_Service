@@ -4,6 +4,8 @@ github.com/bsagat/bereke-merchant-api v1.0.3 h1:xUQtlkZkv5lZeBO3xlnXbY7n+mFrvSSm
 github.com/bsagat/bereke-merchant-api v1.0.3/go.mod h1:W+T+TJyyOio1bndyxVhMoVpkaMn6cx04DfdGWXt8lpg=
 github.com/bsagat/bereke-merchant-api v1.0.4 h1:u2GruK5OEZhpV4AbbB2NpmfK/BGsLmT2Zwz1crsmfMw=
 github.com/bsagat/bereke-merchant-api v1.0.4/go.mod h1:W+T+TJyyOio1bndyxVhMoVpkaMn6cx04DfdGWXt8lpg=
+github.com/bsagat/bereke-merchant-api v1.0.5 h1:2nRf3uZv3n5Ph3L0gbtdMIkYDd6I/Fjs9mcI3NUPKlc=
+github.com/bsagat/bereke-merchant-api v1.0.5/go.mod h1:W+T+TJyyOio1bndyxVhMoVpkaMn6cx04DfdGWXt8lpg=
 github.com/bsagat/envzilla/v2 v2.0.1 h1:n0U+xf2kle5ob7LljhLB5Oslprrhp0VCM1aN3l6ngek=
 github.com/bsagat/envzilla/v2 v2.0.1/go.mod h1:wt2IhJ+vvna1lLQHZAyeF1JX0lBW+vFEaI3flMY+fKs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

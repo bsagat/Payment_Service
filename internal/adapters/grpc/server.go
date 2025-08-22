@@ -44,6 +44,7 @@ func (a *API) Start(ctx context.Context, errCh chan error) {
 		return
 	}
 
+	a.log.Info(ctx, action.ServerStarted, "Server has been started", "port", a.cfg.Port)
 	if err := a.server.Serve(l); err != nil {
 		a.log.Error(ctx, action.ServerStartFail, err, "Failed to start gRPC server")
 		errCh <- fmt.Errorf("failed to start gRPC server: %w", err)

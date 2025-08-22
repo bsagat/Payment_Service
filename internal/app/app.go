@@ -30,7 +30,7 @@ func New(ctx context.Context, cfg config.Config, log logger.Logger) *App {
 	}
 	log.Info(ctx, action.DbConnected, "Database connection has been estabilished")
 
-	brokerMerchant, err := bereke.NewClient(cfg.Broker.ApiKey, types.Mode(cfg.Broker.Mode))
+	brokerMerchant, err := bereke.NewClient(cfg.Broker.Login, cfg.Broker.Password, types.Mode(cfg.Broker.Mode))
 	if err != nil {
 		log.Fatal(ctx, action.ServiceStartFail, err, "Failed to create broker merchant")
 	}
@@ -60,6 +60,7 @@ func (a *App) Stop(ctx context.Context) {
 	a.log.Info(ctx, action.GracefulShutdown, "Closing application...")
 	a.postgresDB.Pool.Close()
 	a.gRPC.Stop()
+	a.log.Info(ctx, action.GracefulShutdown, "Application has been closed...")
 }
 
 func ListenShutdown(ctx context.Context, errCh chan error, log logger.Logger) {

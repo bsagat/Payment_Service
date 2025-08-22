@@ -28,8 +28,9 @@ type (
 	}
 
 	Broker struct {
-		ApiKey string `env:"BEREKE_MERCHANT_API"`
-		Mode   string `env:"BEREKE_MERCHANT_MODE"`
+		Login    string `env:"BEREKE_MERCHANT_LOGIN"`
+		Password string `env:"BEREKE_MERCHANT_PASSWORD"`
+		Mode     string `env:"BEREKE_MERCHANT_MODE"`
 	}
 )
 

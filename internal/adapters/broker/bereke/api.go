@@ -13,8 +13,8 @@ type BerekeClient struct {
 	merchant bma.API
 }
 
-func NewClient(api_key string, mode types.Mode) (*BerekeClient, error) {
-	api, err := bma.NewWithToken(api_key, mode)
+func NewClient(login, password string, mode types.Mode) (*BerekeClient, error) {
+	api, err := bma.NewWithLogin(login, password, mode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new bma client: %v", err)
 	}

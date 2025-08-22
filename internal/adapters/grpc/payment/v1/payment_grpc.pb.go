@@ -20,7 +20,10 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Payment_CreatePayment_FullMethodName    = "/payment.v1.Payment/CreatePayment"
+	Payment_AuthPayment_FullMethodName      = "/payment.v1.Payment/AuthPayment"
+	Payment_DepositPayment_FullMethodName   = "/payment.v1.Payment/DepositPayment"
 	Payment_RefundPayment_FullMethodName    = "/payment.v1.Payment/RefundPayment"
+	Payment_ReversalPayment_FullMethodName  = "/payment.v1.Payment/ReversalPayment"
 	Payment_GetPayment_FullMethodName       = "/payment.v1.Payment/GetPayment"
 	Payment_GetPaymentStatus_FullMethodName = "/payment.v1.Payment/GetPaymentStatus"
 	Payment_SuccessPayment_FullMethodName   = "/payment.v1.Payment/SuccessPayment"
@@ -33,7 +36,10 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PaymentClient interface {
 	CreatePayment(ctx context.Context, in *CreatePaymentRequest, opts ...grpc.CallOption) (*CreatePaymentResponse, error)
+	AuthPayment(ctx context.Context, in *AuthPaymentRequest, opts ...grpc.CallOption) (*AuthPaymentResponse, error)
+	DepositPayment(ctx context.Context, in *DepositPaymentRequest, opts ...grpc.CallOption) (*DepositPaymentResponse, error)
 	RefundPayment(ctx context.Context, in *RefundPaymentRequest, opts ...grpc.CallOption) (*RefundPaymentResponse, error)
+	ReversalPayment(ctx context.Context, in *ReversalPaymentRequest, opts ...grpc.CallOption) (*ReversalPaymentResponse, error)
 	GetPayment(ctx context.Context, in *GetPaymentRequest, opts ...grpc.CallOption) (*GetPaymentResponse, error)
 	GetPaymentStatus(ctx context.Context, in *GetPaymentStatusRequest, opts ...grpc.CallOption) (*GetPaymentStatusResponse, error)
 	SuccessPayment(ctx context.Context, in *SuccessPaymentRequest, opts ...grpc.CallOption) (*SuccessPaymentResponse, error)
@@ -59,10 +65,40 @@ func (c *paymentClient) CreatePayment(ctx context.Context, in *CreatePaymentRequ
 	return out, nil
 }
 
+func (c *paymentClient) AuthPayment(ctx context.Context, in *AuthPaymentRequest, opts ...grpc.CallOption) (*AuthPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuthPaymentResponse)
+	err := c.cc.Invoke(ctx, Payment_AuthPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentClient) DepositPayment(ctx context.Context, in *DepositPaymentRequest, opts ...grpc.CallOption) (*DepositPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DepositPaymentResponse)
+	err := c.cc.Invoke(ctx, Payment_DepositPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *paymentClient) RefundPayment(ctx context.Context, in *RefundPaymentRequest, opts ...grpc.CallOption) (*RefundPaymentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RefundPaymentResponse)
 	err := c.cc.Invoke(ctx, Payment_RefundPayment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentClient) ReversalPayment(ctx context.Context, in *ReversalPaymentRequest, opts ...grpc.CallOption) (*ReversalPaymentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReversalPaymentResponse)
+	err := c.cc.Invoke(ctx, Payment_ReversalPayment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +160,10 @@ func (c *paymentClient) HealthCheck(ctx context.Context, in *HealthCheckRequest,
 // for forward compatibility.
 type PaymentServer interface {
 	CreatePayment(context.Context, *CreatePaymentRequest) (*CreatePaymentResponse, error)
+	AuthPayment(context.Context, *AuthPaymentRequest) (*AuthPaymentResponse, error)
+	DepositPayment(context.Context, *DepositPaymentRequest) (*DepositPaymentResponse, error)
 	RefundPayment(context.Context, *RefundPaymentRequest) (*RefundPaymentResponse, error)
+	ReversalPayment(context.Context, *ReversalPaymentRequest) (*ReversalPaymentResponse, error)
 	GetPayment(context.Context, *GetPaymentRequest) (*GetPaymentResponse, error)
 	GetPaymentStatus(context.Context, *GetPaymentStatusRequest) (*GetPaymentStatusResponse, error)
 	SuccessPayment(context.Context, *SuccessPaymentRequest) (*SuccessPaymentResponse, error)
@@ -143,8 +182,17 @@ type UnimplementedPaymentServer struct{}
 func (UnimplementedPaymentServer) CreatePayment(context.Context, *CreatePaymentRequest) (*CreatePaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePayment not implemented")
 }
+func (UnimplementedPaymentServer) AuthPayment(context.Context, *AuthPaymentRequest) (*AuthPaymentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuthPayment not implemented")
+}
+func (UnimplementedPaymentServer) DepositPayment(context.Context, *DepositPaymentRequest) (*DepositPaymentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DepositPayment not implemented")
+}
 func (UnimplementedPaymentServer) RefundPayment(context.Context, *RefundPaymentRequest) (*RefundPaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefundPayment not implemented")
+}
+func (UnimplementedPaymentServer) ReversalPayment(context.Context, *ReversalPaymentRequest) (*ReversalPaymentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReversalPayment not implemented")
 }
 func (UnimplementedPaymentServer) GetPayment(context.Context, *GetPaymentRequest) (*GetPaymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPayment not implemented")
@@ -200,6 +248,42 @@ func _Payment_CreatePayment_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Payment_AuthPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServer).AuthPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Payment_AuthPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServer).AuthPayment(ctx, req.(*AuthPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_DepositPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DepositPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServer).DepositPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Payment_DepositPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServer).DepositPayment(ctx, req.(*DepositPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Payment_RefundPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RefundPaymentRequest)
 	if err := dec(in); err != nil {
@@ -214,6 +298,24 @@ func _Payment_RefundPayment_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PaymentServer).RefundPayment(ctx, req.(*RefundPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_ReversalPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReversalPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServer).ReversalPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Payment_ReversalPayment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServer).ReversalPayment(ctx, req.(*ReversalPaymentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -320,8 +422,20 @@ var Payment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Payment_CreatePayment_Handler,
 		},
 		{
+			MethodName: "AuthPayment",
+			Handler:    _Payment_AuthPayment_Handler,
+		},
+		{
+			MethodName: "DepositPayment",
+			Handler:    _Payment_DepositPayment_Handler,
+		},
+		{
 			MethodName: "RefundPayment",
 			Handler:    _Payment_RefundPayment_Handler,
+		},
+		{
+			MethodName: "ReversalPayment",
+			Handler:    _Payment_ReversalPayment_Handler,
 		},
 		{
 			MethodName: "GetPayment",

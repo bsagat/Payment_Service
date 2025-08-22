@@ -1,20 +1,22 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type StatusType string
 
 const (
-	StatusCreated    StatusType = "CREATED"    // Платёж создан, но ещё не инициирован
-	StatusAuthorized StatusType = "AUTHORIZED" // Авторизация завершена, средства еще не списаны
-	StatusApproved   StatusType = "APPROVED"   // Платёж одобрен, деньги заблокированы
-	StatusDeposited  StatusType = "DEPOSITED"  // Средства списаны, платёж завершён
-	StatusDeclined   StatusType = "DECLINED"   // Платёж отклонён банком
-	StatusRefunded   StatusType = "REFUNDED"   // Возврат после завершения платежа
+	OrderCreated   StatusType = "CREATED"   // Заказ создан (но не оплачен)
+	OrderApproved  StatusType = "APPROVED"  // Заказ одобрен (средства на счету покупателя заблокированы)
+	OrderDeposited StatusType = "DEPOSITED" // Заказ завершен (деньги списаны со счета покупателя)
+	OrderDeclined  StatusType = "DECLINED"  // Заказ отклонен
+	OrderReversed  StatusType = "REVERSED"  // Авторизованный заказ отклонен
+	OrderRefunded  StatusType = "REFUNDED"  // Возврат средств
 )
 
 type PaymentStatus struct {
-	OrderID   string
+	PaymentID string
 	CreatedAt time.Time
 	Status    string
 }
